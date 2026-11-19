@@ -33,6 +33,14 @@ We do not accept AI as the source of design decisions, of cryptographic construc
 - **Run the checks.** Run `python3 scripts/check_spec.py` and any tests that apply, and report the result honestly.
 - **Verify citations.** Check every reference, RFC number, section number, and quotation against the source. Models invent these.
 
+## Commit trailers and session links
+
+- **Session links are banned** in commit messages and in pull request descriptions, both local and remote. This covers links to AI session pages (for example, `claude.ai/code/...`), `session_...` identifiers, and `claude-session:` lines.
+- **If you disclose AI use in a pull request**, every non-merge commit in that pull request must carry two trailers:
+  - `Co-authored-by: <tool name> <address>`, naming the tool that contributed.
+  - `Task: <short description>`, at most 120 characters, saying what the tool was asked to do. Do not put secrets, personal data, or private material in it.
+- `scripts/check_contributions.py` checks these rules. The `contribution-policy` check runs on every pull request.
+
 ## What you may not do
 
 - **Do not use AI-generated designs for cryptography or for key handling.** The project references published designs (X3DH, the Double Ratchet, RFC 9420, libsodium primitives) and does not invent constructions. AI-assisted edits to these areas must be written or line-by-line reviewed by a human who can check them against the source.

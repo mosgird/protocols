@@ -18,6 +18,7 @@ See [AI_POLICY.md](../AI_POLICY.md). Answer every line.
 - Extent: [ ] none  [ ] brainstorming  [ ] drafted text  [ ] generated code  [ ] review only
 - Cryptographic or key-handling content touched? [ ] no  [ ] yes, human-written or line-by-line reviewed
 - I can explain and defend every line in this pull request: [ ] yes
+- If AI use is disclosed: every commit has `Co-authored-by` and `Task` trailers, and no session links appear in commits or here.
 
 ## Specification sections affected
 

@@ -18,7 +18,7 @@ This repository holds the protocol specification. In v0.1 it contains no client 
   ```
 
 - **Fill in the pull request template completely**, including the security and privacy section. Do not delete sections; write "not applicable" with a reason.
-- **Do not add attribution lines** (such as `Co-authored-by`, `Generated-by`, or tool footers) to commit messages or pull request descriptions. AI use is disclosed in the pull request template's "AI use" section, as [AI_POLICY.md](AI_POLICY.md) requires.
+- **Session links are banned** in commit messages and pull request descriptions. Commit trailers (`Co-authored-by`, `Task`) and AI disclosure follow [AI_POLICY.md](AI_POLICY.md). Every pull request must pass the `contribution-policy` check.
 
 ## Contributors and commit signing
 
