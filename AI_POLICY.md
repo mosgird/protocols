@@ -4,15 +4,27 @@ This document sets the rules for using generative AI tools when contributing to 
 
 ## Position
 
-Maintainers are critical of generative AI. The concerns include energy and water use, effects on workers and on the people whose work was used in training, and the concentration of compute and capital in a few companies. These concerns are the reason for the rules below.
+Maintainers are critical of generative AI, and that critique shapes the rules below. The concerns are:
 
-We accept AI-assisted contributions because the work of this project is large and our time is limited. We treat AI tools as a way to work faster on tasks that are already understood. We do not treat them as a source of design decisions or of understanding. We expect our reliance on them to fall as the project matures, and this policy will be revised in pull requests as that happens.
+- **Energy and water.** Training and running large models uses large amounts of electricity and cooling water.
+- **Labor and consent.** Models are trained on work that was made without the consent of its authors or payment to them. Their output can replace the work of the people they learned from.
+- **Concentration.** Training and serving large models depends on a few companies with large amounts of capital and compute.
+- **Understanding.** Generated output can look correct while being wrong. Relying on it can replace learning the subject.
+
+We still use AI tools in a few bounded tasks where doing the work by hand is costly and the output is easy to check. The current uses are:
+
+- **Documentation:** drafting prose that a maintainer then rewrites or edits.
+- **Boilerplate code:** repetitive code such as test scaffolding, configuration, and serialization glue. The author reads, tests, and owns it.
+- **Wording:** suggesting alternative phrasing, or pointing out unclear sentences, in text the author wrote.
+- **Translations:** a first draft of translated text. A fluent speaker who is not the drafter must review it before it is merged.
+
+We do not accept AI as the source of design decisions, of cryptographic constructions, or of factual claims in the specification. We expect our reliance on these tools to fall as the project matures. This policy will be revised in pull requests as that happens.
 
 ## What you may do
 
-- Use AI tools to draft, reword, summarize, or check text you have written.
-- Use AI tools to write code or test cases, provided you read, understand, and test all of it.
+- Use AI tools for the uses listed under Position: documentation drafts, boilerplate code, wording suggestions, and translation drafts.
 - Use AI tools to search for or explain published material, provided you verify what they cite.
+- Use AI tools to check text you have written, provided you decide what changes to make.
 
 ## What you must do
 
