@@ -6,6 +6,8 @@ This document describes goals, non-goals, architecture, terminology and the mess
 
 ## 1. Goals
 
+- **Security and privacy as the primary constraint.** Every component, feature, and deployment mode is designed under this requirement. None is exempt. Where another goal conflicts with security or privacy, the conflict is recorded as an open question. It is not resolved by weakening the requirement.
+- **Minimal metadata.** Reduce what the relay server learns about who communicates, when, and from where. The current gaps are listed in section 3.3 and tracked in [open question 10](open-questions.md#10-metadata-minimization).
 - **Private messaging.** Message content is readable only by the intended participants and their devices. The relay server cannot read it.
 - **Group channels.** Servers contain channels. A channel is a multi-party conversation whose membership can change over time, and its keys follow membership changes.
 - **Server-independent identity.** A user's identity key material is generated and held by the user's devices. The server does not issue identities and cannot replace one without the user's devices detecting it. The identifier format is **[open]**.
@@ -16,7 +18,6 @@ This document describes goals, non-goals, architecture, terminology and the mess
 - **Voice and video.** Not specified in v0.1.
 - **Monetization.** Not addressed by the protocol.
 - **Content policy.** The protocol does not define which content is permitted. Mechanisms for handling reports are an open question (see [open-questions.md](open-questions.md)). Policy itself is out of scope.
-- **Hiding network metadata from the server.** The server can see IP addresses. Protection against a server that also observes the network is not a v0.1 goal.
 - **Peer-to-peer message delivery.** Messages are delivered through the relay server. Peer-to-peer transports may be specified later for calls and file transfer (see [decision 0001](../decisions/0001-relay-based-e2ee.md)).
 - **Federation.** Not decided. v0.1 assumes a single official instance. Federation is an open question, not an assumed property.
 

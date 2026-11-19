@@ -9,7 +9,7 @@ Group chats and channels have many members whose membership changes over time. P
 ## Decision
 
 - Group chats and channels use the Messaging Layer Security protocol, as specified in RFC 9420.
-- Each channel is one MLS group. Each group chat is one MLS group. Whether a server is one group or several is an open question (see [open questions, section 10](../v0.1/open-questions.md#10-ambiguities-in-the-initial-brief)).
+- Each channel is one MLS group. Each group chat is one MLS group. Whether a server is one group or several is an open question (see [open questions, section 11](../v0.1/open-questions.md#11-ambiguities-in-the-initial-brief)).
 - Membership changes are made with MLS commits. Each commit advances the group epoch.
 - The relay server acts as the MLS Delivery Service. It delivers handshake and application messages. It does not participate in key derivation.
 - The ciphersuite and group size limits are open (see [open question 9](../v0.1/open-questions.md#9-mls-ciphersuite-and-group-size-limits)).

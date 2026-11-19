@@ -153,7 +153,28 @@ Content policy itself is out of scope for the protocol. This question covers onl
 
 ---
 
-## 10. Ambiguities in the initial brief
+## 10. Metadata minimization
+
+**Question:** Which metadata visible to the relay server can be reduced in v0.1, and how?
+
+The overview lists what the server observes today: sender and recipient identifiers, timing, message sizes, and IP addresses (see [overview section 3.3](overview.md#33-what-the-server-can-and-cannot-observe)). The project requires that these be minimized. The mechanisms below are not yet chosen and are not specified.
+
+**Options (may be combined):**
+
+- **A. Sealed sender.** The sender's identity is inside the encrypted envelope, so the server cannot see who sent a message. The server still sees the recipient.
+  - Cost: the server cannot authenticate senders for abuse controls or rate limits on sender identity. Requires a design that is specified and reviewed, not an invented scheme.
+- **B. Padding and batching.** Messages are padded to fixed size classes, and sends are delayed or batched.
+  - Cost: more bandwidth and latency. Timing padding has limited effect on a server that sees all traffic.
+- **C. IP address hiding.** Clients reach the server through an anonymizing transport, such as a proxy or onion-style routing, or the server does not log IP addresses.
+  - Cost: latency, operating cost, and reduced reliability. Logging policy alone is a promise, not a property of the protocol.
+- **D. Accept current exposure, documented.** Leave the gaps in place and state them clearly to users.
+  - Cost: does not meet the minimal-metadata goal. Listed so that the choice is explicit.
+
+**Open detail:** which of these the v0.1 threat model requires, and how each interacts with abuse handling (open question 6).
+
+---
+
+## 11. Ambiguities in the initial brief
 
 These points are not clear from the initial brief. They are recorded here instead of being assumed.
 
