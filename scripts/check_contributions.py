@@ -81,6 +81,14 @@ def ai_disclosure(body: str) -> bool | None:
     return ticked != ["none"]
 
 
+def asset_attestation(body: str) -> bool | None:
+    """True if the 'AI-generated assets' line ticks 'none', False if it does not, None if absent."""
+    for line in body.splitlines():
+        if line.lstrip("- ").startswith("AI-generated assets"):
+            return bool(re.search(r"\[[xX]\]\s*none", line))
+    return None
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 4:
         print(__doc__)
@@ -97,6 +105,12 @@ def main(argv: list[str]) -> int:
     disclosure = ai_disclosure(body)
     if disclosure is None:
         errors.append("pull request description must answer the 'AI use' section (tick one Extent box)")
+
+    attestation = asset_attestation(body)
+    if attestation is None:
+        errors.append("pull request description must include the 'AI-generated assets' line")
+    elif not attestation:
+        errors.append("AI-generated assets are permanently prohibited; tick 'none' in the 'AI-generated assets' line")
 
     for sha, message in commits(base, head):
         short = sha[:10]

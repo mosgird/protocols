@@ -36,6 +36,11 @@ Security and privacy are the primary constraint of this project. No component, f
 - Do not invent cryptographic constructions. Reference the published designs: X3DH and the Double Ratchet (Signal), RFC 9420 (MLS), and libsodium primitives.
 - Do not weaken a stated requirement to make another goal easier. Record the conflict as an open question instead.
 
+## AI-generated assets
+
+- Agents must never generate assets: no images, icons, logos, illustrations, fonts, sound, music, voice, video, 3D models, textures, or animations, including placeholders. This is permanent. See [AI_POLICY.md](AI_POLICY.md).
+- Agents may write code, tests, scripts, and configuration, and may draft documentation and translations under the same policy.
+
 ## Specification writing
 
 - Plain, direct English. No marketing language and no filler.
