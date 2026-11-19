@@ -33,4 +33,4 @@ See [AI_POLICY.md](../AI_POLICY.md). Answer every line.
 - [ ] `python3 scripts/check_spec.py` passes locally
 - [ ] Headings and anchors referenced from other files are updated
 - [ ] No uncertain statement is presented as fact; uncertain points are open questions
-- [ ] No attribution lines in commits or in this description
+- [ ] No session links in commits or in this description

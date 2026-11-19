@@ -28,7 +28,7 @@ We do not accept AI as the source of design decisions, of cryptographic construc
 
 ## What you must do
 
-- **Disclose use.** Complete the "AI use" section of the pull request template. Say which tool was used and how: brainstorming, drafted text, generated code, or review only. Disclosure goes in the pull request description. Do not add tool footers or attribution lines to commits.
+- **Disclose use.** Complete the "AI use" section of the pull request template. Say which tool was used and how: brainstorming, drafted text, generated code, or review only. Disclosure goes in the pull request description. Commit trailers are required as set out under "Commit trailers and session links" below.
 - **Understand what you submit.** You must be able to explain and defend every line in your contribution. If you cannot, do not submit it.
 - **Run the checks.** Run `python3 scripts/check_spec.py` and any tests that apply, and report the result honestly.
 - **Verify citations.** Check every reference, RFC number, section number, and quotation against the source. Models invent these.
