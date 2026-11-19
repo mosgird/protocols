@@ -82,9 +82,17 @@ def ai_disclosure(body: str) -> bool | None:
 
 
 def asset_attestation(body: str) -> bool | None:
-    """True if the 'AI-generated assets' line ticks 'none', False if it does not, None if absent."""
-    for line in body.splitlines():
-        if line.lstrip("- ").startswith("AI-generated assets"):
+    """True if the attestation line in the 'AI use' section ticks 'none'.
+
+    Returns False if that line exists without 'none' ticked, None if it is absent.
+    Only checkbox lines inside '## AI use' count, so prose elsewhere in the
+    description cannot satisfy or confuse the check.
+    """
+    if "## AI use" not in body:
+        return None
+    section = body.split("## AI use", 1)[1].split("\n## ", 1)[0]
+    for line in section.splitlines():
+        if line.lstrip("- ").startswith("AI-generated assets") and "[" in line:
             return bool(re.search(r"\[[xX]\]\s*none", line))
     return None
 
