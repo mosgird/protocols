@@ -10,6 +10,15 @@
 - [ ] Tooling or CI
 - [ ] Documentation only
 
+## AI use
+
+See [AI_POLICY.md](../AI_POLICY.md). Answer every line.
+
+- Tool used (or "none"):
+- Extent: [ ] none  [ ] brainstorming  [ ] drafted text  [ ] generated code  [ ] review only
+- Cryptographic or key-handling content touched? [ ] no  [ ] yes, human-written or line-by-line reviewed
+- I can explain and defend every line in this pull request: [ ] yes
+
 ## Specification sections affected
 
 <!-- For example: overview.md section 3.3, open question 4, decision 0002. -->
