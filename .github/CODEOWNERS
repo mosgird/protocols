@@ -1,5 +1,5 @@
-# Every pull request needs review from the code owner before merge.
-# Contributors do not need signed commits; review is the control.
+# Code owners are notified of pull requests. Review is not required by the
+# branch rules for now (small team). Contributors do not need signed commits.
 *                       @vx9k
 
 # Changes to automation and branch rules always need the owner.

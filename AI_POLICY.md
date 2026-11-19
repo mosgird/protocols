@@ -51,4 +51,4 @@ We do not accept AI as the source of design decisions, of cryptographic construc
 
 - Maintainers may ask for a change to be rewritten by hand, or decline an AI-heavy contribution, without a detailed reason. Ask if you want one.
 - Pull requests opened by AI agents are reviewed exactly like any other. Agents do not merge (see [AGENTS.md](AGENTS.md)).
-- Changes to this policy go through a pull request and need owner approval.
+- Changes to this policy go through a pull request like any other change.

@@ -23,6 +23,6 @@ The relay server stores and forwards ciphertext only. Clients perform all encryp
 | [scripts/check_spec.py](scripts/check_spec.py) | Consistency checks (links, anchors, decision format, open questions, license) |
 | [scripts/check_contributions.py](scripts/check_contributions.py) | Pull request checks: session links, AI-use disclosure, commit trailers |
 | [.github/rulesets/main.json](.github/rulesets/main.json) | Branch rule set for `main`, applied to the repository |
-| [.github/CODEOWNERS](.github/CODEOWNERS) | Code owner review for all pull requests |
+| [.github/CODEOWNERS](.github/CODEOWNERS) | Code owners for automation, scripts, and policy files |
 | [client/](client/) | Client implementation (empty; not started) |
 | [server/](server/) | Relay server implementation (empty; not started) |
