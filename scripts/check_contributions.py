@@ -24,8 +24,17 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Links to hosted AI sessions or conversations from any vendor, session
+# identifiers, "<tool>-session:" lines, and "generated with/by <tool>" footers.
+# Session identifiers must contain a digit and be at least 16 characters, so
+# ordinary words such as "session-handling" do not match.
+AI_TOOL = r"(?:claude|codex|chatgpt|gpt|gemini|deepseek|copilot|cursor|aider|perplexity)"
 SESSION_LINK = re.compile(
-    r"claude\.ai/(?:code|chat)/|\bsession_[0-9A-Za-z]{8,}|claude-session\s*:|generated with\s*\[?claude",
+    r"(?:claude\.ai|chatgpt\.com|chat\.openai\.com|gemini\.google\.com|chat\.deepseek\.com"
+    r"|copilot\.microsoft\.com|perplexity\.ai)/\S*"
+    r"|\bsession[_-](?=[0-9A-Za-z]*\d)[0-9A-Za-z]{16,}"
+    rf"|\b{AI_TOOL}-session\s*:"
+    rf"|generated (?:with|by)\s*\[?{AI_TOOL}",
     re.IGNORECASE,
 )
 CREDENTIAL = re.compile(
