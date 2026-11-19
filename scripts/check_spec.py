@@ -150,6 +150,29 @@ def check_license(root: Path, errors: list[str]) -> None:
         errors.append("LICENSE: contains template markup ('<<' or '>>')")
 
 
+POINTER_FILES = [
+    "CLAUDE.md",
+    "GEMINI.md",
+    ".github/copilot-instructions.md",
+    "CONVENTIONS.md",
+    ".cursorrules",
+    ".windsurfrules",
+]
+
+
+def check_pointers(root: Path, errors: list[str]) -> None:
+    """Each agent instruction file must redirect to AGENTS.md and AI_POLICY.md."""
+    for rel in POINTER_FILES:
+        path = root / rel
+        if not path.exists():
+            errors.append(f"missing agent instruction file: {rel}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for target in ["AGENTS.md", "AI_POLICY.md"]:
+            if target not in text:
+                errors.append(f"{rel}: must redirect to {target}")
+
+
 def main(argv: list[str]) -> int:
     root = Path(argv[1]).resolve() if len(argv) > 1 else Path(__file__).resolve().parent.parent
     errors: list[str] = []
@@ -158,6 +181,7 @@ def main(argv: list[str]) -> int:
     check_links(root, errors)
     check_open_questions(root, errors)
     check_license(root, errors)
+    check_pointers(root, errors)
     if errors:
         for error in errors:
             print(f"ERROR {error}")

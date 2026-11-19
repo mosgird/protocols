@@ -81,6 +81,22 @@ def ai_disclosure(body: str) -> bool | None:
     return ticked != ["none"]
 
 
+def asset_attestation(body: str) -> bool | None:
+    """True if the attestation line in the 'AI use' section ticks 'none'.
+
+    Returns False if that line exists without 'none' ticked, None if it is absent.
+    Only checkbox lines inside '## AI use' count, so prose elsewhere in the
+    description cannot satisfy or confuse the check.
+    """
+    if "## AI use" not in body:
+        return None
+    section = body.split("## AI use", 1)[1].split("\n## ", 1)[0]
+    for line in section.splitlines():
+        if line.lstrip("- ").startswith("AI-generated assets") and "[" in line:
+            return bool(re.search(r"\[[xX]\]\s*none", line))
+    return None
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 4:
         print(__doc__)
@@ -97,6 +113,12 @@ def main(argv: list[str]) -> int:
     disclosure = ai_disclosure(body)
     if disclosure is None:
         errors.append("pull request description must answer the 'AI use' section (tick one Extent box)")
+
+    attestation = asset_attestation(body)
+    if attestation is None:
+        errors.append("pull request description must include the 'AI-generated assets' line")
+    elif not attestation:
+        errors.append("AI-generated assets are permanently prohibited; tick 'none' in the 'AI-generated assets' line")
 
     for sha, message in commits(base, head):
         short = sha[:10]
