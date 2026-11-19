@@ -1,9 +1,10 @@
-# Code owners are notified of pull requests. Review is not required by the
+# Code owners are the mosgird/developers team. Review is not required by the
 # branch rules for now (small team). Contributors do not need signed commits.
-*                       @vx9k
+# A bare organization (@mosgird) is not a valid owner; teams are.
+*                       @mosgird/developers
 
 # Changes to automation and branch rules always need the owner.
-/.github/               @vx9k
-/scripts/               @vx9k
-/AGENTS.md              @vx9k
-/LICENSE                @vx9k
+/.github/               @mosgird/developers
+/scripts/               @mosgird/developers
+/AGENTS.md              @mosgird/developers
+/LICENSE                @mosgird/developers
