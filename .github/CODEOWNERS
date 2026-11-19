@@ -1,0 +1,9 @@
+# Every pull request needs review from the code owner before merge.
+# Contributors do not need signed commits; review is the control.
+*                       @vx9k
+
+# Changes to automation and branch rules always need the owner.
+/.github/               @vx9k
+/scripts/               @vx9k
+/AGENTS.md              @vx9k
+/LICENSE                @vx9k

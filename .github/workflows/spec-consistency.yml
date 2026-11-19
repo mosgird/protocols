@@ -1,0 +1,21 @@
+name: spec-consistency
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  spec-consistency:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # Pinned to a full commit SHA. The tag is kept as a comment for humans.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Check specification consistency
+        run: python3 scripts/check_spec.py

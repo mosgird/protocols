@@ -18,5 +18,8 @@ The relay server stores and forwards ciphertext only. Clients perform all encryp
 | [spec/decisions/0002-signal-for-direct-messages.md](spec/decisions/0002-signal-for-direct-messages.md) | Decision record: Signal protocol design for direct messages |
 | [spec/decisions/0003-mls-for-groups.md](spec/decisions/0003-mls-for-groups.md) | Decision record: MLS (RFC 9420) for group chats and channels |
 | [test-vectors/README.md](test-vectors/README.md) | Placeholder for test vectors (added with the spec) |
+| [AGENTS.md](AGENTS.md) | Rules for AI agents and contributors: workflow, security and privacy, writing |
+| [scripts/check_spec.py](scripts/check_spec.py) | Consistency checks (links, anchors, decision format, open questions, license) |
+| [.github/rulesets/main.json](.github/rulesets/main.json) | Branch rule set for `main`, stored for application when the plan allows |
 | [client/](client/) | Client implementation (empty; not started) |
 | [server/](server/) | Relay server implementation (empty; not started) |
