@@ -10,6 +10,16 @@
 - [ ] Tooling or CI
 - [ ] Documentation only
 
+## AI use
+
+See [AI_POLICY.md](../AI_POLICY.md). Answer every line.
+
+- Tool used (or "none"):
+- Extent: [ ] none  [ ] brainstorming  [ ] drafted text  [ ] generated code  [ ] review only
+- Cryptographic or key-handling content touched? [ ] no  [ ] yes, human-written or line-by-line reviewed
+- I can explain and defend every line in this pull request: [ ] yes
+- If AI use is disclosed: every commit has `Co-authored-by` and `Task` trailers, and no session links appear in commits or here.
+
 ## Specification sections affected
 
 <!-- For example: overview.md section 3.3, open question 4, decision 0002. -->
@@ -23,4 +33,4 @@
 - [ ] `python3 scripts/check_spec.py` passes locally
 - [ ] Headings and anchors referenced from other files are updated
 - [ ] No uncertain statement is presented as fact; uncertain points are open questions
-- [ ] No attribution lines in commits or in this description
+- [ ] No session links in commits or in this description
