@@ -35,7 +35,7 @@ We do not accept AI as the source of design decisions, of cryptographic construc
 
 ## Commit trailers and session links
 
-- **Session links are banned** in commit messages and in pull request descriptions, both local and remote. This covers links to AI session pages (for example, `claude.ai/code/...`), `session_...` identifiers, and `claude-session:` lines.
+- **Session links are banned** in commit messages and in pull request descriptions. Automated checks cover the remote pull request and its commits; keeping local drafts clean is the contributor's responsibility. This covers links to AI session pages (for example, `claude.ai/code/...`), `session_...` identifiers, and `claude-session:` lines.
 - **If you disclose AI use in a pull request**, every non-merge commit in that pull request must carry two trailers:
   - `Co-authored-by: <tool name> <address>`, naming the tool that contributed.
   - `Task: <short description>`, at most 120 characters, saying what the tool was asked to do. Do not put secrets, personal data, or private material in it.

@@ -18,7 +18,7 @@ This repository holds the protocol specification. In v0.1 it contains no client 
   ```
 
 - **Fill in the pull request template completely**, including the security and privacy section. Do not delete sections; write "not applicable" with a reason.
-- **Session links are banned** in commit messages and pull request descriptions. Commit trailers (`Co-authored-by`, `Task`) and AI disclosure follow [AI_POLICY.md](AI_POLICY.md). Every pull request must pass the `contribution-policy` check.
+- **Session links are banned** in commit messages and pull request descriptions. Commit trailers (`Co-authored-by`, `Task`) and AI disclosure follow [AI_POLICY.md](AI_POLICY.md). The `contribution-policy` check runs on every pull request. It is not yet a required check in the branch rules, so a failing run does not block merging until it is added.
 
 ## Contributors and commit signing
 

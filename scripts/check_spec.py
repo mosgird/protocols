@@ -23,6 +23,7 @@ from pathlib import Path
 
 REQUIRED_PATHS = [
     "AGENTS.md",
+    "AI_POLICY.md",
     "README.md",
     "LICENSE",
     "spec/v0.1/overview.md",
