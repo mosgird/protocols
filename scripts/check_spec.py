@@ -29,10 +29,12 @@ REQUIRED_PATHS = [
     "LICENSE.md",
     "spec/v0.1/overview.md",
     "spec/v0.1/open-questions.md",
+    "spec/VERSIONING.md",
+    "SECURITY.md",
+    "ACCESSIBILITY.md",
+    "CONTRIBUTING.md",
     "spec/decisions",
     "test-vectors/README.md",
-    "client/.gitkeep",
-    "server/.gitkeep",
 ]
 
 DECISION_NAME = re.compile(r"^\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
