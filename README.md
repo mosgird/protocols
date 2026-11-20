@@ -17,6 +17,10 @@ It contains the specification, the decision records behind it, the test vectors 
 
 Each implementation names the version of this specification it implements. When an implementation and this specification disagree, the specification is correct and the implementation has a bug, or the specification needs a change proposed here.
 
+## Where implementation details come from
+
+This repository is the reference for implementation details. Users and developers should read the specification here before relying on any behavior of an implementation. Implementations follow it: if one disagrees, the specification is correct and the implementation is the thing to fix.
+
 ## Contents
 
 | Path | Description |
