@@ -21,6 +21,8 @@ The relay server stores and forwards ciphertext only. Clients perform all encryp
 | [AGENTS.md](AGENTS.md) | Rules for AI agents and contributors: workflow, security and privacy, writing |
 | [AI_POLICY.md](AI_POLICY.md) | Rules for using generative AI tools when contributing |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to propose a change: branches, pull requests, checks |
+| [SECURITY.md](SECURITY.md) | How to report a security or privacy problem privately |
+| [ACCESSIBILITY.md](ACCESSIBILITY.md) | Accessibility goals for the documents and for implementers |
 | [scripts/check_spec.py](scripts/check_spec.py) | Consistency checks (links, anchors, decision format, open questions, license) |
 | [scripts/check_contributions.py](scripts/check_contributions.py) | Pull request checks: session links, AI-use disclosure, commit trailers |
 | [.github/rulesets/main.json](.github/rulesets/main.json) | Branch rule set for `main`, applied to the repository |

@@ -45,4 +45,4 @@ This project is licensed under the Mulan Permissive Software License, Version 2 
 
 ## Reporting security problems
 
-Do not open a public issue for a security or privacy problem. Report it to the maintainers privately. A dedicated contact method has not been set up yet; until one is, contact a maintainer directly.
+Do not open a public issue for a security or privacy problem. Report it privately, as described in [SECURITY.md](SECURITY.md). Accessibility problems are handled as ordinary issues, as described in [ACCESSIBILITY.md](ACCESSIBILITY.md).
