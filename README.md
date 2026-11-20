@@ -6,7 +6,7 @@ The relay server stores and forwards ciphertext only. Clients perform all encryp
 
 **Status:** specification in draft (v0.1). No client or server implementation exists yet.
 
-**License:** Mulan Permissive Software License, Version 2 (Mulan PSL v2). See [LICENSE](LICENSE).
+**License:** Mulan Permissive Software License, Version 2 (Mulan PSL v2). See [LICENSE.md](LICENSE.md).
 
 ## Contents
 

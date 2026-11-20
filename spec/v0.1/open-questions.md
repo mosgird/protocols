@@ -180,4 +180,4 @@ These points are not clear from the initial brief. They are recorded here instea
 
 - **"Server-independent identity."** It is not clear whether this means that identity survives a change of server (which requires federation or portability), or that identity does not depend on the server for its security properties. This draft uses the second reading. Confirm before the spec is finalized.
 - **"Servers" in the product sense and MLS groups.** It is not decided whether one server is one large MLS group, or whether each channel is its own group. This draft assumes each channel is its own group.
-- **License.** The project uses Mulan PSL v2, as recorded in the repository's LICENSE file. Any future relicensing is not considered in v0.1.
+- **License.** The project uses Mulan PSL v2, as recorded in the repository's LICENSE.md file. Any future relicensing is not considered in v0.1.
