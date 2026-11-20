@@ -12,7 +12,8 @@ Checks:
   3. Every relative Markdown link resolves to an existing file, and every
      anchor resolves to a heading in the target file.
   4. Open questions are numbered 1..N in order, with no gaps or duplicates.
-  5. LICENSE is the Mulan PSL v2 text and contains no template markup.
+  5. LICENSE.md is the Mulan PSL v2 text, with each section present once,
+     no template markup, and no unfilled placeholders.
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ REQUIRED_PATHS = [
     "AGENTS.md",
     "AI_POLICY.md",
     "README.md",
-    "LICENSE",
+    "LICENSE.md",
     "spec/v0.1/overview.md",
     "spec/v0.1/open-questions.md",
     "spec/decisions",
@@ -139,15 +140,21 @@ def check_open_questions(root: Path, errors: list[str]) -> None:
 
 
 def check_license(root: Path, errors: list[str]) -> None:
-    path = root / "LICENSE"
+    path = root / "LICENSE.md"
     if not path.exists():
         return
     text = path.read_text(encoding="utf-8")
     for needle in ["Mulan Permissive Software License", "END OF THE TERMS AND CONDITIONS"]:
         if needle not in text:
-            errors.append(f"LICENSE: expected text not found: {needle!r}")
+            errors.append(f"LICENSE.md: expected text not found: {needle!r}")
     if "<<" in text or ">>" in text:
-        errors.append("LICENSE: contains template markup ('<<' or '>>')")
+        errors.append("LICENSE.md: contains template markup ('<<' or '>>')")
+    for once in ["END OF THE TERMS AND CONDITIONS", "obtain a copy of Mulan PSL v2"]:
+        if text.count(once) != 1:
+            errors.append(f"LICENSE.md: expected exactly one {once!r}, found {text.count(once)}")
+    for placeholder in ["[Year]", "[name of copyright holder]", "[Software Name]"]:
+        if placeholder in text:
+            errors.append(f"LICENSE.md: unfilled placeholder {placeholder!r}")
 
 
 POINTER_FILES = [
