@@ -4,6 +4,8 @@ Instructions for AI agents and human contributors working in this repository.
 
 ## Scope
 
+This repository is the source of truth for implementation details. Agents, developers, and users look here first. Before implementing, changing, or documenting protocol behavior in `mosgird/client`, `mosgird/server`, or `mosgird/android`, read the specification here, starting with `spec/v0.1/overview.md` and `spec/decisions/`. If an implementation disagrees with this repository, the specification is correct; propose a change here before changing behavior there.
+
 This repository holds the protocol specification. In v0.1 it contains no client or server code. Do not add implementation code under `client/` or `server/` unless a merged decision record says to.
 
 ## Workflow
