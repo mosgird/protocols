@@ -52,9 +52,9 @@ ii. Create a file named "LICENSE" which contains the whole context of this Licen
 
 iii. Attach the statement to the appropriate annotated syntax at the beginning of each source file.
 
-Copyright (c) 2026 mosgird
+Copyright (c) 2026 Mosgird
 
-protocols is licensed under Mulan PSL v2.
+Mosgird protocols is licensed under Mulan PSL v2.
 
 You can use this software according to the terms and conditions of the Mulan PSL v2.
 

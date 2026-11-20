@@ -25,8 +25,10 @@ This document describes goals, non-goals, architecture, terminology and the mess
 
 ### 3.1 Components
 
-- **Client.** Software running on a user's device. It generates and stores key material, encrypts outgoing messages, decrypts incoming messages, and manages local state.
-- **Relay server.** Stores and forwards ciphertext. It also stores public key material that clients need in order to start encrypted sessions, such as pre-key bundles. It never receives private keys or plaintext.
+- **Client.** Software running on a user's device. It generates and stores key material, encrypts outgoing messages, decrypts incoming messages, and manages local state. Implemented in `mosgird/client`.
+- **Relay server.** Stores and forwards ciphertext. It also stores public key material that clients need in order to start encrypted sessions, such as pre-key bundles. It never receives private keys or plaintext. Implemented in `mosgird/server`.
+
+Implementations are not part of this specification. Their repositories name the version of the specification they follow (see [VERSIONING.md](../VERSIONING.md)).
 - **Official instance.** The single deployment in v0.1. A client connects to one relay server.
 
 ### 3.2 Trust model
