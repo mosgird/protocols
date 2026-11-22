@@ -8,12 +8,15 @@ Usage:
 
 Checks:
   1. Required files and directories exist.
-  2. Decision records follow the naming and section format in AGENTS.md.
+  2. Decision records follow the naming and section format in AGENTS.md:
+     unique numbers, and a "# NNNN. " title that matches the file name.
   3. Every relative Markdown link resolves to an existing file, and every
-     anchor resolves to a heading in the target file.
+     anchor resolves to a heading in the target file. Duplicate headings get
+     GitHub's "-1", "-2" suffixes. Links inside fenced code blocks are skipped.
   4. Open questions are numbered 1..N in order, with no gaps or duplicates.
   5. LICENSE.md is the Mulan PSL v2 text, with each section present once,
      no template markup, and no unfilled placeholders.
+  6. Each agent instruction file points to AGENTS.md and AI_POLICY.md.
 """
 
 from __future__ import annotations
@@ -54,8 +57,24 @@ def github_slug(heading: str) -> str:
     return text.replace(" ", "-")
 
 
+FENCE = re.compile(r"^(```|~~~).*?^\1[^\n]*$", re.MULTILINE | re.DOTALL)
+
+
+def strip_fences(text: str) -> str:
+    """Remove fenced code blocks, which hold neither headings nor links."""
+    return FENCE.sub("", text)
+
+
 def heading_slugs(text: str) -> set[str]:
-    return {github_slug(m.group(2)) for m in HEADING.finditer(text)}
+    """Anchors as GitHub makes them: repeated slugs get -1, -2, ... suffixes."""
+    slugs: set[str] = set()
+    seen: dict[str, int] = {}
+    for m in HEADING.finditer(strip_fences(text)):
+        slug = github_slug(m.group(2))
+        count = seen.get(slug, 0)
+        seen[slug] = count + 1
+        slugs.add(slug if count == 0 else f"{slug}-{count}")
+    return slugs
 
 
 def markdown_files(root: Path) -> list[Path]:
@@ -77,6 +96,7 @@ def check_decisions(root: Path, errors: list[str]) -> None:
     decisions = root / "spec" / "decisions"
     if not decisions.is_dir():
         return
+    numbers: dict[str, Path] = {}
     for path in sorted(decisions.glob("*")):
         rel = path.relative_to(root)
         if path.name == ".gitkeep":
@@ -84,7 +104,13 @@ def check_decisions(root: Path, errors: list[str]) -> None:
         if not DECISION_NAME.match(path.name):
             errors.append(f"{rel}: name must match NNNN-kebab-slug.md")
             continue
+        number = path.name[:4]
+        if number in numbers:
+            errors.append(f"{rel}: decision number {number} is also used by {numbers[number].name}")
+        numbers[number] = path
         text = path.read_text(encoding="utf-8")
+        if not re.match(rf"# {number}\. \S", text):
+            errors.append(f"{rel}: first line must be the title '# {number}. ...'")
         status = re.search(r"^\*\*Status:\*\*\s*(\S+)", text, re.MULTILINE)
         if not status or status.group(1) not in DECISION_STATUSES:
             errors.append(f"{rel}: missing or invalid '**Status:**' line")
@@ -108,7 +134,7 @@ def check_links(root: Path, errors: list[str]) -> None:
         return slug_cache[target]
 
     for source in markdown_files(root):
-        text = source.read_text(encoding="utf-8")
+        text = strip_fences(source.read_text(encoding="utf-8"))
         for match in LINK.finditer(text):
             target_str = match.group(2)
             if EXTERNAL.match(target_str):

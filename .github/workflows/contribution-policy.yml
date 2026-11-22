@@ -2,6 +2,8 @@ name: contribution-policy
 
 on:
   pull_request:
+    # "edited" re-runs the check when the description is fixed after a failure.
+    types: [opened, edited, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
