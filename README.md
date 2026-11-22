@@ -26,7 +26,12 @@ Users and developers should read the specification here before relying on any be
 
 | Path | Description |
 |------|-------------|
-| [spec/v0.1/overview.md](spec/v0.1/overview.md) | Goals, non-goals, architecture, terminology, message flow |
+| [spec/v0.1/overview.md](spec/v0.1/overview.md) | Goals, non-goals, and a list of the v0.1 documents |
+| [spec/v0.1/architecture.md](spec/v0.1/architecture.md) | Components and trust model |
+| [spec/v0.1/metadata.md](spec/v0.1/metadata.md) | What parties other than the intended participants can observe |
+| [spec/v0.1/terminology.md](spec/v0.1/terminology.md) | Terms used throughout the specification |
+| [spec/v0.1/message-flow.md](spec/v0.1/message-flow.md) | How direct and group messages travel |
+| [spec/v0.1/references.md](spec/v0.1/references.md) | Published designs the protocol builds on |
 | [spec/v0.1/open-questions.md](spec/v0.1/open-questions.md) | Unresolved decisions, with options and trade-offs |
 | [spec/VERSIONING.md](spec/VERSIONING.md) | How specification versions are numbered, released, and referenced |
 | [spec/decisions/](spec/decisions/) | Decision records |

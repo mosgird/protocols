@@ -31,7 +31,7 @@ See [AI_POLICY.md](../AI_POLICY.md). Answer every question. The boxes can be tic
 
 ## Specification sections affected
 
-<!-- For example: overview.md section 3.3, open question 4, decision 0002. -->
+<!-- For example: metadata.md, open question 4, decision 0002. -->
 
 ## Security and privacy impact
 
