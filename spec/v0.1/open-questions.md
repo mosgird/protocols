@@ -167,7 +167,7 @@ Until [decision 0006](../decisions/0006-dcgka-for-groups.md), this question aske
 
 **Question:** Which concrete primitives instantiate DCGKA, and what group sizes must be supported?
 
-DCGKA needs a signature scheme for authenticated causal broadcast, a key derivation function (the paper uses HKDF), an authenticated encryption scheme for application messages, and the primitives of the two-party component ([question 15](#15-two-party-component-for-dcgka)).
+DCGKA needs a signature scheme for authenticated causal broadcast, a key derivation function (the paper uses HKDF), an authenticated encryption scheme for application messages, and the primitives of the two-party component ([decision 0019](../decisions/0019-two-party-component-for-dcgka.md)).
 
 **Options:**
 
@@ -181,7 +181,7 @@ DCGKA needs a signature scheme for authenticated causal broadcast, a key derivat
 - The maximum channel size for v0.1. The paper reports 70 ms of CPU and 40 kB of traffic per key update at 128 members, with cost growing linearly. Measurements on target devices are not yet done.
 - Whether every primitive is available in libsodium, or in libcrux, as [decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md) requires.
 - How test vectors are produced. No published vectors exist for DCGKA, and the test-vector rule forbids copying them from an implementation.
-- How the team's choice of a post-quantum key exchange applies to groups.
+- How DCGKA's key derivation, which the paper specifies with HKDF, is carried out with keyed BLAKE2b ([decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md)). The post-quantum key exchange for groups is set by [decision 0019](../decisions/0019-two-party-component-for-dcgka.md).
 
 ---
 
@@ -451,7 +451,7 @@ Delivery is online-only ([decision 0005](../decisions/0005-serverless-online-onl
 **Open detail:**
 
 - How the Ed25519 and ML-DSA-87 parts of a signature are bound together (decision 0011). It must follow a published design so that neither part can be removed or replaced alone.
-- How the chosen option interacts with first contact ([question 13](#13-first-contact-without-a-directory)) and with the group protocol's two-party component ([question 15](#15-two-party-component-for-dcgka)).
+- How the chosen option interacts with first contact ([question 13](#13-first-contact-without-a-directory)) and with the group protocol's two-party component ([decision 0019](../decisions/0019-two-party-component-for-dcgka.md)).
 - How deniability is shown for the patterns of decision 0012. The symbolic provers that [decision 0013](../decisions/0013-formal-verification.md) requires do not check deniability in their usual form, so it needs a separate argument.
 - Group control messages are signed, because DCGKA requires it. Group membership changes are therefore not deniable to other members, even if direct messages are.
 - Group application messages are signed under short-lived keys ([decision 0018](../decisions/0018-deniable-signatures-for-group-messages.md)). Their deniability rests on the argument of multi-party OTR (Goldberg et al., CCS 2009), which the paper does not formally prove, and on the deniability of decision 0012's sessions. Both need the separate argument above.

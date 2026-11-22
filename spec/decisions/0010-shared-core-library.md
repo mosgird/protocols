@@ -20,7 +20,7 @@ The team wants the same code on every platform: Linux, the BSDs, Windows, macOS,
 - `mosgird/core` follows decision 0004 like the other implementations. It names the specification version it follows, keeps its own documentation, uses this repository's agent and contributor rules, and runs this repository's contribution checker at a pinned commit.
 - The libraries `mosgird/core` depends on are chosen and documented in that repository, within the requirements of this specification. The planned starting set is:
   - libsodium, for classical primitives and ML-KEM;
-  - libcrux, for ML-KEM-1024 and other primitives libsodium lacks;
+  - libcrux, for ML-DSA-87 and other primitives libsodium lacks ([decision 0011](0011-cryptographic-suite-and-security-level.md));
   - Arti, for Tor;
   - i2pd, used through its SAMv3 interface, for I2P.
 
