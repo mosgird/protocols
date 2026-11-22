@@ -10,8 +10,10 @@ description. Reads commit messages with git. Standard library only.
 Checks:
   1. The pull request description and every commit in BASE..HEAD contain no
      session links and no credential-like strings.
-  2. The pull request description answers the "AI use" section: exactly one
-     "Extent" line with ticked boxes.
+  2. The pull request description answers the "AI use" section: at least one
+     "Extent" box is ticked, and "none" is ticked for "AI-generated assets".
+     Boxes may be nested task-list items under the question (the current
+     template) or inline on the question's line (older descriptions).
   3. If AI use is disclosed, every non-merge commit has a Co-authored-by
      trailer with a name and an address, and a Task trailer that is short
      and non-empty.
@@ -77,35 +79,67 @@ def trailers(message: str) -> dict[str, list[str]]:
     return found
 
 
-def ai_disclosure(body: str) -> bool | None:
-    """True if AI use is disclosed, False if 'none', None if unanswered."""
+INLINE_BOX = re.compile(r"\[([ xX])\]\s*([A-Za-z][A-Za-z ,-]*?)(?=\s{2,}|\s*\[|[.;(]|$)")
+NESTED_BOX = re.compile(r"^\s+[-*]\s+\[([ xX])\]\s*(.+?)\s*$")
+
+
+def ai_use_section(body: str) -> str | None:
     if "## AI use" not in body:
         return None
-    section = body.split("## AI use", 1)[1].split("\n## ", 1)[0]
-    extent = [line for line in section.splitlines() if line.lstrip("- ").startswith("Extent:")]
-    if not extent:
+    return body.split("## AI use", 1)[1].split("\n## ", 1)[0]
+
+
+def boxes(section: str, label: str) -> list[tuple[bool, str]] | None:
+    """Checkboxes for the question whose line starts with `label`.
+
+    Two layouts are accepted. In the current template, each choice is a nested
+    task-list item ("  - [ ] none") under the question, so GitHub renders it as
+    a clickable box. Older descriptions put every box on the question's own
+    line ("- Extent: [ ] none  [ ] brainstorming"). Returns (ticked, text)
+    pairs, lower-cased, or None if the question is absent. Only lines inside
+    '## AI use' count, so prose elsewhere cannot satisfy or confuse the check.
+    """
+    lines = section.splitlines()
+    for i, line in enumerate(lines):
+        if not re.match(r"^[-*]\s+", line) or not line[1:].lstrip().startswith(label):
+            continue
+        found = [(m.group(1) != " ", m.group(2).strip().lower()) for m in INLINE_BOX.finditer(line)]
+        for child in lines[i + 1:]:
+            if not child.strip():
+                continue
+            match = NESTED_BOX.match(child)
+            if not match:
+                break
+            found.append((match.group(1) != " ", match.group(2).strip().lower()))
+        return found
+    return None
+
+
+def ai_disclosure(body: str) -> bool | None:
+    """True if AI use is disclosed, False if 'none', None if unanswered."""
+    section = ai_use_section(body)
+    if section is None:
         return None
-    ticked = re.findall(r"\[[xX]\]\s*([A-Za-z ]+?)(?=\s{2,}|\s*\[|$)", extent[0])
-    ticked = [t.strip().lower() for t in ticked]
+    extent = boxes(section, "Extent")
+    ticked = [text for checked, text in extent or [] if checked]
     if not ticked:
         return None
     return ticked != ["none"]
 
 
 def asset_attestation(body: str) -> bool | None:
-    """True if the attestation line in the 'AI use' section ticks 'none'.
+    """True if the 'AI-generated assets' question ticks 'none'.
 
-    Returns False if that line exists without 'none' ticked, None if it is absent.
-    Only checkbox lines inside '## AI use' count, so prose elsewhere in the
-    description cannot satisfy or confuse the check.
+    Returns False if the question has boxes but 'none' is not ticked, and None
+    if the question is absent or has no boxes.
     """
-    if "## AI use" not in body:
+    section = ai_use_section(body)
+    if section is None:
         return None
-    section = body.split("## AI use", 1)[1].split("\n## ", 1)[0]
-    for line in section.splitlines():
-        if line.lstrip("- ").startswith("AI-generated assets") and "[" in line:
-            return bool(re.search(r"\[[xX]\]\s*none", line))
-    return None
+    found = boxes(section, "AI-generated assets")
+    if not found:
+        return None
+    return any(checked and text.startswith("none") for checked, text in found)
 
 
 def main(argv: list[str]) -> int:
