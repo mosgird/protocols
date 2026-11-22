@@ -234,7 +234,7 @@ Every option below carries ciphertext that is already end-to-end encrypted. The 
 
 - Almost every option needs a way to join the network that someone else runs: directory authorities, reseed hosts, or bootstrap peers. Whether that fits [decision 0005](../decisions/0005-serverless-online-only-delivery.md) is undecided.
 - How an address relates to the user identifier ([question 2](#2-identity-format)).
-- How mobile background limits affect reachability.
+- How mobile background limits affect reachability. This is now [question 17](#17-mobile-reachability-without-push-services).
 
 ---
 
@@ -317,3 +317,28 @@ Any mechanism must follow a published design for decentralized access control. N
 - Whether moderation actions are logged, and who can read the log.
 - Resistance to one person creating many identities, since new identities cost nothing to create.
 - Appeals, and the transfer of a community when its owner leaves.
+
+---
+
+## 17. Mobile reachability without push services
+
+**Question:** How does a phone receive messages while the app is not in use, when push services are excluded ([decision 0008](../decisions/0008-no-push-services.md)) and delivery is online-only ([decision 0005](../decisions/0005-serverless-online-only-delivery.md))?
+
+Platform limits change between operating system versions. The costs below must be checked against current Android and Apple documentation before a decision is written.
+
+**Options (may be combined):**
+
+- **A. Reachable only while the app is open.** The client connects to the transport only in the foreground.
+  - Cost: the least battery use and the simplest option. Delivery to phones depends on both users having the app open at the same time. The only option certain to be available on iOS.
+- **B. A long-running background service.** On Android, a foreground service keeps the transport connected. Briar uses this approach.
+  - Cost: steady battery and data use, more so on an anonymizing transport. Android requires a persistent notification, which shows anyone who sees the screen that the app is running. Android limits which foreground service types an app may use and for how long. Not available on iOS.
+- **C. Periodic wake-ups scheduled by the operating system.** For example, Android WorkManager, whose shortest repeat interval is 15 minutes, or iOS background app refresh, which runs when the system chooses.
+  - Cost: a message arrives only if the sender retries during one of the recipient's short online periods, so delivery is slow and unreliable. Regular online periods can form a pattern that network observers or contacts can recognize. On iOS, the system decides when and whether the app runs.
+- **D. Delivery to the user's other device.** An always-on device of the user, such as a desktop, receives messages. The phone fetches them from that device when it connects ([question 14](#14-retry-expiry-and-relaying-under-online-only-delivery), option B).
+  - Cost: depends on multi-device handling ([question 3](#3-multi-device-key-handling)). It does not help users with only a phone. The other device is the user's own, not a server, but it must be online and reachable.
+
+**Open detail:**
+
+- Whether an iOS client is possible with any option other than A.
+- Battery and data cost of B on each candidate transport ([question 12](#12-transport-and-addressing)). This needs measurement, not estimates.
+- Whether the client's notification text, in option B, can avoid naming the app.
