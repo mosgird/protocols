@@ -52,7 +52,7 @@ The design follows published, deployed designs, not a new construction:
 
     A user can also **distrust a user key**. That blocks every device of that identity, present and future. If the person starts a new identity, they come back only through a new invite.
 
-    Trust states are local. They are never sent to the contact or to anyone else. In groups, a device sends an approval for each device it approves for that group, and removes a device it distrusts ([decision 0020](0020-approval-before-joining-a-group.md)).
+    Trust states are local. They are never sent to the contact or to anyone else. In groups, a device sends an approval for each device it approves for that group, and a withdrawal and a removal for a device it distrusts ([decision 0020](0020-approval-before-joining-a-group.md)).
 11. **Fan-out.** A direct message is encrypted separately, in its own session, for each approved device of the recipient, and for each of the sender's own other devices, so that all of a user's devices show the conversation. This is WhatsApp's client fan-out.
 12. **Groups.** Every device is a DCGKA member, as before (decision 0006). A device joins a group only after every member device has approved it, and a device that a member distrusts is removed for everyone ([decision 0020](0020-approval-before-joining-a-group.md)). When a user's device list adds or removes a device, the user's own devices propose or remove it in each group they share.
 
