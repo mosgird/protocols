@@ -355,3 +355,30 @@ Platform limits change between operating system versions. The costs below must b
 - Whether an iOS client is possible with any option other than A.
 - Battery and data cost of B on each candidate transport ([question 12](#12-transport-and-addressing)). This needs measurement, not estimates.
 - Whether the client's notification text, in option B, can avoid naming the app.
+
+---
+
+## 18. Post-quantum deniable authentication
+
+**Question:** How do two devices authenticate each other in a way that resists quantum attackers and stays deniable ([decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md))?
+
+X-Wing protects the confidentiality of a session against quantum attackers. Authentication is a separate property. It must hold at the time a session is set up, and it must not produce proof that a third party could check. Signatures produce such proof, so session setup is not signed.
+
+Delivery is online-only ([decision 0005](../decisions/0005-serverless-online-only-delivery.md)), so session setup can be interactive. Both devices are online at the same time. This allows designs that need a round trip, which Signal's asynchronous handshake avoids.
+
+**Options:**
+
+- **A. Classical deniable authentication for now.** Devices authenticate each other with X25519 Diffie-Hellman between identity and session keys, as X3DH and Signal's PQXDH do. X-Wing adds post-quantum confidentiality.
+  - Cost: deniable, and built on published, analyzed designs. Authentication is classical. Once a quantum computer exists, an attacker who can break X25519 at the time of setup can impersonate a device. Recorded sessions stay confidential.
+- **B. Authentication by key encapsulation.** Each device holds a long-term X-Wing key. Each side encapsulates a secret to the other's long-term key, and only the holder of the matching private key can derive the session keys. Published designs of this kind include KEMTLS (Schwabe, Stebila, Wiggers, ACM CCS 2020) and Post-Quantum Noise (Angel, Dowling, Hülsing, Schwabe, Weber, ACM CCS 2022).
+  - Cost: post-quantum and deniable, because nothing is signed. The designs are newer than X3DH and need more round trips, which online-only delivery permits. Adapting them to Mosgird must not change their structure, and needs a cryptographer's review.
+- **C. Deniable post-quantum signatures.** Designated-verifier signatures (Brendel, Fiedler, Günther, Janson, Stebila, PKC 2022) or ring signatures (RingXKEM, Hashimoto, Katsumata, Niot, Tucker, Wiggers).
+  - Cost: designed for an asynchronous handshake like Signal's. They are research designs with no production library.
+- **D. Sign session setup with the hybrid signature.**
+  - Cost: post-quantum authentication, but not deniable. A signed transcript proves to anyone who took part. This conflicts with the team's deniability requirement and is listed for completeness.
+
+**Open detail:**
+
+- How the Ed25519 and ML-DSA-87 parts of a signature are bound together (decision 0011). It must follow a published design so that neither part can be removed or replaced alone.
+- How the chosen option interacts with first contact ([question 13](#13-first-contact-without-a-directory)) and with the group protocol's two-party component ([question 15](#15-two-party-component-for-dcgka)).
+- Group control messages are signed, because DCGKA requires it. Group membership changes are therefore not deniable to other members, even if direct messages are.
