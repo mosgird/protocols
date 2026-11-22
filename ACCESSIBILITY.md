@@ -18,7 +18,7 @@ Sentences are short. Terms are defined once, in [overview section 4](spec/v0.1/o
 
 ## For implementers
 
-The specification does not define a user interface. Implementations meet the accessibility goals in their own repositories. The client repository, for example, has its own accessibility document.
+The specification does not define a user interface. Implementations meet the accessibility goals in their own repositories. The desktop repository, for example, has its own accessibility document.
 
 The protocol should not require an interaction that depends on sight or hearing alone. If a future section does, it must say so and name an alternative.
 
