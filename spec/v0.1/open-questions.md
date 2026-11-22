@@ -251,6 +251,8 @@ Every option below carries ciphertext that is already end-to-end encrypted. The 
 
 ## 13. First contact without a directory
 
+**Status:** closed by [decision 0014](../decisions/0014-first-contact-by-invite.md): a one-time invite link or QR code (options A and B), then a contact request that the recipient accepts (option E). The open detail below is still open.
+
 **Question:** How does a device get another device's address and identity KEM key the first time, with no server to publish them?
 
 Since [decision 0012](../decisions/0012-mosgird-session-protocol.md), there are no pre-key bundles. A device needs only the other device's address and identity KEM key, and starts an interactive handshake. Options below that mention a bundle now mean those two items.
@@ -271,7 +273,9 @@ Since [decision 0012](../decisions/0012-mosgird-session-protocol.md), there are 
 **Open detail:**
 
 - One-time pre-keys: resolved by decision 0012. Each connection runs an interactive handshake with fresh ephemeral keys, so no pre-keys exist.
-- What a contact link or QR code carries. The identity KEM key is 1,216 bytes, so a link may carry the address and a fingerprint instead, with the key fetched over the transport and checked against the fingerprint.
+- What a contact link or QR code carries. Resolved by decision 0014: addresses, a fingerprint of the identity keys, and a one-time invite secret.
+- A public, reusable link for users who want to be reachable by people they have not invited. Decision 0014 does not support one. If one is added, requests from it need limits against spam, such as rate limits or proof of work, and each option costs reachability or battery.
+- Whether the Post-Quantum Noise paper's results cover the `psk` modifier that decision 0014 uses.
 
 ---
 
