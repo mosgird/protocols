@@ -110,13 +110,15 @@ Content policy itself is out of scope for the protocol. This question covers onl
 - **D. Blocking and muting.** Users block contacts. Blocks are enforced by clients. Server enforcement is not applicable after decision 0005.
   - Cost: limited protection against a determined sender who creates new identities. Needs identity cost to be non-trivial (see [question 2](#2-identity-format)). A blocked sender can still try to connect, so blocks must be enforced before any work is spent on the sender's traffic.
 
-**Open detail:** how reports interact with group channels, and whether anyone keeps a record of reports.
+**Open detail:** how reports interact with channels, and whether anyone keeps a record of reports. Moderation inside communities is covered by [question 16](#16-community-moderation-without-an-operator).
 
 ---
 
-## 7. Server and channel structure visibility
+## 7. Community and channel structure visibility
 
-**Question:** Who can learn server names, channel names, roles and membership?
+Before [decision 0007](../decisions/0007-communities.md), this question used "server" for a community.
+
+**Question:** Who can learn community names, channel names, roles and membership?
 
 **Options:**
 
@@ -194,7 +196,7 @@ The overview lists what contacts, group members, network observers, and transpor
 These points are not clear from the initial brief. They are recorded here instead of being assumed.
 
 - **"Server-independent identity."** Resolved by [decision 0005](../decisions/0005-serverless-online-only-delivery.md): there are no servers, so identity cannot depend on one. The overview now calls this goal "self-held identity".
-- **"Servers" in the product sense and groups.** Resolved by [decision 0006](../decisions/0006-dcgka-for-groups.md): each channel is its own group, so a server with several channels has several groups. "Server" in this sense is a community of channels, not a machine.
+- **"Servers" in the product sense and groups.** Resolved by [decision 0006](../decisions/0006-dcgka-for-groups.md): each channel is its own group, so a community with several channels has several groups. [Decision 0007](../decisions/0007-communities.md) renames "servers" in this sense to "communities".
 - **License.** The project uses Mulan PSL v2, as recorded in the repository's LICENSE.md file. Any future relicensing is not considered in v0.1.
 
 ---
@@ -288,3 +290,30 @@ DCGKA sends some secrets to a single member in a direct message, encrypted with 
   - Cost: supersedes decision 0002. Loses the wide review and deployment of the Signal design. One two-party protocol to implement.
 
 **Open detail:** the paper requires that 2SM map identities to public keys through a public key infrastructure that includes ephemeral prekeys. Under decision 0005 those prekeys come from first contact ([question 13](#13-first-contact-without-a-directory)).
+
+---
+
+## 16. Community moderation without an operator
+
+**Question:** How do communities give members with a moderating role the power to act against bad-faith members, when there is no server and no operator ([decision 0007](../decisions/0007-communities.md))?
+
+Any mechanism must follow a published design for decentralized access control. None is chosen yet, and this project does not invent one.
+
+**Options (may be combined):**
+
+- **A. Signed roles chained to a community key.** Whoever creates a community holds its key. Roles are granted by signed statements that chain back to that key. Clients check the chain before they apply a moderation action.
+  - Cost: losing or leaking the community key loses or gives away control. Revoking a role needs rules. Grants and revocations made at the same time must resolve to the same result for every member, using only causal order.
+- **B. Several moderators must agree.** An action takes effect only when a set number of moderators have signed it.
+  - Cost: under online-only delivery, enough moderators must be reachable, so action is slower. It resists a single compromised or rogue moderator.
+- **C. Local moderation only.** Each member mutes or blocks others for themselves. There is no community-wide removal.
+  - Cost: does not meet the team's requirement to act against bad-faith members. Listed for completeness.
+- **D. Admission by invitation.** New members join only with an invitation signed by a member who holds a role that allows it.
+  - Cost: slows growth. Invitations that are shared widely act like open admission. Combines with A or B.
+
+**Open detail:**
+
+- How two moderators who act against each other at the same time are resolved. DCGKA reaches the same membership from causal order (decision 0006). The permission rules must give the same answer too.
+- What evidence a moderator can see. It is limited to what reporters disclose (question 6, option A).
+- Whether moderation actions are logged, and who can read the log.
+- Resistance to one person creating many identities, since new identities cost nothing to create.
+- Appeals, and the transfer of a community when its owner leaves.

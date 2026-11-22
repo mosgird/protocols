@@ -1,6 +1,6 @@
 # Mosgird protocols
 
-This repository is the source of truth for the Mosgird protocol: an end-to-end encrypted chat platform with servers, channels, direct messages, and roles.
+This repository is the source of truth for the Mosgird protocol: an end-to-end encrypted chat platform with communities, channels, direct messages, roles, and moderation, which runs without servers.
 
 It contains the specification, the decision records behind it, the test vectors that implementations must pass, and the rules for contributing to this repository. It contains no implementation code. Implementations live in their own repositories and follow this specification.
 

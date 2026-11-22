@@ -10,7 +10,7 @@ This document describes goals, non-goals, architecture, terminology and the mess
 - **No servers and no domain names.** Devices deliver messages to each other directly. No server stores, forwards, or orders anything for the protocol, and nothing depends on DNS (see [decision 0005](../decisions/0005-serverless-online-only-delivery.md)).
 - **Minimal metadata.** Reduce what parties other than the intended participants learn about who communicates, when, and from where. The current gaps are listed in section 3.3 and tracked in [open question 10](open-questions.md#10-metadata-minimization).
 - **Private messaging.** Message content is readable only by the intended participants and their devices.
-- **Group channels.** Servers contain channels. A channel is a multi-party conversation whose membership can change over time, and its keys follow membership changes.
+- **Communities and channels.** A community contains channels, members and roles, and has moderation against bad-faith members ([decision 0007](../decisions/0007-communities.md)). A channel is a multi-party conversation whose membership can change over time, and its keys follow membership changes.
 - **Self-held identity.** A user's identity key material is generated and held by the user's devices. No one issues identities. A substituted key is detected only if contacts verify keys ([open question 4](open-questions.md#4-key-verification-method)). The identifier format is **[open]**.
 - **Readable specification.** Each mechanism is described well enough that an independent implementer can build an interoperable client.
 
@@ -52,7 +52,7 @@ There is no server. What others can observe depends on who they are and on the t
 
 - The membership of the group, which member sent each message, who added or removed whom, and when each member updates their keys. DCGKA does not hide this from members ([decision 0006](../decisions/0006-dcgka-for-groups.md)).
 - The size and timing of each message, and the addresses of the members they talk to directly, unless the transport hides them.
-- Server and channel structure: names, roles, and membership. Whether non-members can learn any of this is **[open]** ([open question 7](open-questions.md#7-server-and-channel-structure-visibility)).
+- Community and channel structure: names, roles, membership, and moderation actions. Whether non-members can learn any of this is **[open]** ([open question 7](open-questions.md#7-community-and-channel-structure-visibility)).
 
 **Network observers and transport relays can observe**, depending on the transport:
 
@@ -74,9 +74,12 @@ There is no server. What others can observe depends on who they are and on the t
 - **Session.** The cryptographic state shared by two devices for direct messages, as defined by the Double Ratchet (see [decision 0002](../decisions/0002-signal-for-direct-messages.md)). In group contexts, membership is tracked by DCGKA group state, not by pairwise sessions (see [decision 0006](../decisions/0006-dcgka-for-groups.md)).
 - **Group.** A set of member devices that share DCGKA state. Each member keeps a ratchet for every member, and message keys come from the sender's ratchet.
 - **Causal order.** The order in which one message depends on another: a message sent after its sender processed another message comes after it. A member processes a group message only after all messages that come before it in causal order.
-- **Channel.** A named conversation inside a server. Each channel is one group. Membership is determined by the server's roles and permissions model, which is not specified in this document.
+- **Community.** A named set of channels, with members and roles ([decision 0007](../decisions/0007-communities.md)). It is not a machine. The brief called this a "server"; the specification does not.
+- **Role.** A set of permissions that a community grants to some members. The roles and permissions model is **[open]** ([open question 16](open-questions.md#16-community-moderation-without-an-operator)).
+- **Moderation action.** An action that a member with a moderating role takes against another member, such as removal. Every member's client checks and applies it.
+- **Channel.** A named conversation inside a community. Each channel is one group. Membership follows the community's roles and permissions.
 - **Direct message.** A conversation between two users, encrypted with pairwise sessions.
-- **Group chat.** A conversation with more than two participants that is not part of a server. It is one group.
+- **Group chat.** A conversation with more than two participants that is not part of a community. It is one group.
 - **Event.** A unit that one device sends to another. An event consists of an encrypted payload and the metadata the transport needs to deliver it. Event types (messages, membership changes, key updates, acknowledgments) are **[open]** in their full list.
 
 ## 5. Message flow

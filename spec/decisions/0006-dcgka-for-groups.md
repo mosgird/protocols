@@ -13,7 +13,7 @@ The team chose decentralized continuous group key agreement (DCGKA), from M. Wei
 ## Decision
 
 - Group chats and channels use the DCGKA protocol as specified in the paper. This specification references the paper for the algorithm. It does not restate or modify it. Any deviation is a new decision record.
-- Each channel is one DCGKA group. Each group chat is one DCGKA group. A server, in the product sense, with several channels therefore has several groups.
+- Each channel is one DCGKA group. Each group chat is one DCGKA group. A community with several channels therefore has several groups ([decision 0007](0007-communities.md)).
 - Group protocol messages are sent by authenticated causal broadcast, as the paper defines it (section 5.1). Each message is signed under the sender's identity key. A member processes a message only after every message that causally precedes it. Over the transport, a broadcast is sent to each member device directly, and missing messages are re-sent.
 - The two-party secure messaging (2SM) component that DCGKA uses is open (see [open question 15](../v0.1/open-questions.md#15-two-party-component-for-dcgka)).
 - The concrete primitives and the group size limit are open (see [open question 9](../v0.1/open-questions.md#9-group-protocol-primitives-and-group-size-limits)).
