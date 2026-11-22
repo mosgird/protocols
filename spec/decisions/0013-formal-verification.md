@@ -34,7 +34,7 @@ The team wants the cryptography proven with mathematical tools, where that is po
   - Some primitives of decision 0011 may have no verified implementation, for example XChaCha20 and BLAKE2b. Each must be checked; where none exists, libsodium is used and the gap is listed.
   - X-Wing is built from ML-KEM-768, X25519, and SHA3-256. If no library implements X-Wing itself with verified code, the core library composes it exactly as the X-Wing draft specifies, from verified parts, and tests it against the draft's test vectors.
 - hax checks only the subset of Rust it supports. The protocol code has to be written in that subset, which shapes how `mosgird/core` is written.
-- The group protocol (DCGKA, decision 0006) needs a model too, before it is accepted. DCGKA has a published game-based proof, but Mosgird's choice of two-party component ([open question 15](../v0.1/open-questions.md#15-two-party-component-for-dcgka)) changes what must be shown.
+- The group protocol (DCGKA, decision 0006) needs a model too, before it is accepted. DCGKA has a published game-based proof, but Mosgird's choice of two-party component ([decision 0019](0019-two-party-component-for-dcgka.md)) changes what must be shown.
 
 ## Alternatives considered
 
