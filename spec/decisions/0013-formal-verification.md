@@ -18,7 +18,7 @@ The team wants the cryptography proven with mathematical tools, where that is po
   - The session protocol of decision 0012 is modelled in Tamarin or ProVerif before 0012 is accepted. The model covers the handshake patterns at first contact and between contacts, and the ratchet.
   - It states and proves: secrecy of message keys, mutual authentication, forward secrecy, and recovery after a key leak.
   - Every later change to the session protocol, the group protocol, or the first-contact flow updates the model in the same pull request.
-- **The models live in this repository**, next to the specification text they describe. The checks that run them are added to CI once the first model exists.
+- **The models live in this repository**, next to the specification text they describe. The checks that run them are added to CI once the first model exists. The first models are in [spec/v0.1/models](../v0.1/models/README.md) and run with `scripts/check_models.py`.
 - **Verified primitive implementations come first.** For each primitive of [decision 0011](0011-cryptographic-suite-and-security-level.md), the core library uses a formally verified implementation (libcrux, or HACL\* through libcrux) where one exists. It uses libsodium where none exists. Which library provides each primitive is listed in `mosgird/core`, with the reason.
 - **The core library's protocol code is checked against the model with hax** where hax supports the code. Code it cannot check, such as the transports, is listed as unverified in `mosgird/core`.
 - **Rust stays the implementation language.** Proof languages are used for the models and through hax, not as a replacement for the core library.

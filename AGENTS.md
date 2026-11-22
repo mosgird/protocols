@@ -77,6 +77,6 @@ Security and privacy are the primary constraint of this project. No component, f
 
 ## Before you finish a task
 
-1. Run `python3 scripts/check_spec.py` and confirm it passes.
+1. Run `python3 scripts/check_spec.py` and confirm it passes. If the change touches `spec/v0.1/models/`, also run `python3 scripts/check_models.py` (see [the models README](spec/v0.1/models/README.md)).
 2. Re-read each changed file for the required sections and for stale cross-references.
 3. Push the branch and open a pull request with the template filled in.

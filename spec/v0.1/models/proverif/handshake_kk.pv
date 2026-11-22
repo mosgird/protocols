@@ -1,0 +1,124 @@
+(* Mosgird session protocol, handshake between known contacts:
+   the Post-Quantum Noise form of KK (decision 0012).
+   DRAFT drafted by an AI tool. Not a proof until a human with
+   ProVerif experience has reviewed every line (decision 0013).
+
+     pre-messages:  -> s   <- s
+     message 1:     -> skem, e       (encapsulation to the responder's identity key)
+     message 2:     <- ekem, skem    (to the initiator's ephemeral key, then to its identity key)
+     message 3:     -> transport     (first message under the session keys)
+
+   Two honest devices, A and B, run any number of sessions in both
+   roles, with each other and with any key the attacker chooses.
+   In phase 1 both identity keys are revealed, to check forward
+   secrecy. *)
+
+free skA, skB: skey [private].
+free secretI, secretR: bitstring [private].
+
+const proto_kk: bitstring.
+
+event InitAccept(pkey, pkey, key, key).
+event RespRunning(pkey, pkey, key, key).
+event RespAccept(pkey, pkey, key, key).
+
+(* Secrecy of transport payloads between A and B, including after
+   both identity keys leak (phase 1): forward secrecy. *)
+query attacker(secretI).
+query attacker(secretR).
+
+(* The initiator agrees with the responder on peers and keys. *)
+query ti: key, tr: key;
+  inj-event(InitAccept(pk(skA), pk(skB), ti, tr)) ==> inj-event(RespRunning(pk(skA), pk(skB), ti, tr)).
+query ti: key, tr: key;
+  inj-event(InitAccept(pk(skB), pk(skA), ti, tr)) ==> inj-event(RespRunning(pk(skB), pk(skA), ti, tr)).
+
+(* The responder agrees with the initiator, once the first
+   transport message arrives. *)
+query ti: key, tr: key;
+  inj-event(RespAccept(pk(skA), pk(skB), ti, tr)) ==> inj-event(InitAccept(pk(skA), pk(skB), ti, tr)).
+query ti: key, tr: key;
+  inj-event(RespAccept(pk(skB), pk(skA), ti, tr)) ==> inj-event(InitAccept(pk(skB), pk(skA), ti, tr)).
+
+(* Sanity: an honest session completes. ProVerif must report these
+   as false (the event is reachable); otherwise the model is vacuous. *)
+query ti: key, tr: key; event(RespAccept(pk(skA), pk(skB), ti, tr)).
+query ti: key, tr: key; event(InitAccept(pk(skA), pk(skB), ti, tr)).
+
+let InitKK(skI: skey, pkR: pkey) =
+  let pkI = pk(skI) in
+  let h0 = hash(hash(hash(proto_kk, empty), pk2b(pkI)), pk2b(pkR)) in
+  let ck0 = h2k(proto_kk) in
+  (* message 1: skem, e *)
+  new r1: coins;
+  let ct1 = kem_ct(pkR, r1) in
+  let ss1 = kem_ss(pkR, r1) in
+  let h1 = hash(h0, ct1) in
+  let ck1 = kdf_ck(ck0, ss1) in
+  let k1 = kdf_k(ck0, ss1) in
+  new eI: skey;
+  let h2 = hash(h1, pk2b(pk(eI))) in
+  let c1 = aead_enc(k1, h2, empty) in
+  let h3 = hash(h2, c1) in
+  out(c, (ct1, pk(eI), c1));
+  (* message 2: ekem, skem *)
+  in(c, (ct2: bitstring, ct3: bitstring, c2: bitstring));
+  let ss2 = decap(eI, ct2) in
+  let h4 = hash(h3, ct2) in
+  let ck2 = kdf_ck(ck1, ss2) in
+  let ss3 = decap(skI, ct3) in
+  let h5 = hash(h4, ct3) in
+  let ck3 = kdf_ck(ck2, ss3) in
+  let k3 = kdf_k(ck2, ss3) in
+  let p2 = aead_dec(k3, h5, c2) in
+  let ti = split_i(ck3) in
+  let tr = split_r(ck3) in
+  event InitAccept(pkI, pkR, ti, tr);
+  (* message 3: first transport message *)
+  if pkI = pk(skA) && pkR = pk(skB) then
+    out(c, aead_enc(ti, empty, secretI))
+  else
+    out(c, aead_enc(ti, empty, empty)).
+
+let RespKK(skR: skey, pkI: pkey) =
+  let pkR = pk(skR) in
+  let h0 = hash(hash(hash(proto_kk, empty), pk2b(pkI)), pk2b(pkR)) in
+  let ck0 = h2k(proto_kk) in
+  (* message 1 *)
+  in(c, (ct1: bitstring, eI: pkey, c1: bitstring));
+  let ss1 = decap(skR, ct1) in
+  let h1 = hash(h0, ct1) in
+  let ck1 = kdf_ck(ck0, ss1) in
+  let k1 = kdf_k(ck0, ss1) in
+  let h2 = hash(h1, pk2b(eI)) in
+  let p1 = aead_dec(k1, h2, c1) in
+  let h3 = hash(h2, c1) in
+  (* message 2 *)
+  new r2: coins;
+  let ct2 = kem_ct(eI, r2) in
+  let h4 = hash(h3, ct2) in
+  let ck2 = kdf_ck(ck1, kem_ss(eI, r2)) in
+  new r3: coins;
+  let ct3 = kem_ct(pkI, r3) in
+  let h5 = hash(h4, ct3) in
+  let ck3 = kdf_ck(ck2, kem_ss(pkI, r3)) in
+  let k3 = kdf_k(ck2, kem_ss(pkI, r3)) in
+  let c2 = aead_enc(k3, h5, empty) in
+  let ti = split_i(ck3) in
+  let tr = split_r(ck3) in
+  event RespRunning(pkI, pkR, ti, tr);
+  out(c, (ct2, ct3, c2));
+  (* message 3 *)
+  in(c, cf: bitstring);
+  let m3 = aead_dec(ti, empty, cf) in
+  event RespAccept(pkI, pkR, ti, tr);
+  if pkI = pk(skA) && pkR = pk(skB) then
+    out(c, aead_enc(tr, empty, secretR)).
+
+process
+  out(c, pk(skA)); out(c, pk(skB));
+  (   (!in(c, pkR: pkey); InitKK(skA, pkR))
+    | (!in(c, pkR: pkey); InitKK(skB, pkR))
+    | (!in(c, pkI: pkey); RespKK(skA, pkI))
+    | (!in(c, pkI: pkey); RespKK(skB, pkI))
+    | (phase 1; out(c, skA); out(c, skB)) )

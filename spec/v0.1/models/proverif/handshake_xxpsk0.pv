@@ -1,0 +1,165 @@
+(* Mosgird first contact: the Post-Quantum Noise form of XX with the
+   invite secret as a pre-shared key at the start (psk0), followed by
+   a contact request (decisions 0012 and 0014).
+   DRAFT drafted by an AI tool. Not a proof until a human with
+   ProVerif experience has reviewed every line (decision 0013).
+
+     invite (private channel):  fingerprint(B's key), psk
+     message 1:  -> invite id, e                  (keys from psk)
+     message 2:  <- ekem, s                       (B's key, encrypted)
+     message 3:  -> skem, s                       (A's key, encrypted)
+     message 4:  <- skem
+     message 5:  -> contact request               (transport)
+     message 6:  <- reply after acceptance        (transport)
+
+   B creates invites and answers each one once. Some invites go to A
+   over a private channel (the link reaches A unchanged). Others go
+   to the attacker, who can then use them as itself. A also opens
+   links that the attacker hands it. In phase 1 all identity keys and
+   invite secrets are revealed, to check forward secrecy. *)
+
+free skA, skB: skey [private].
+free requestA, replyB: bitstring [private].
+free linkch: channel [private].
+
+const proto_xx: bitstring.
+
+fun fp(pkey): bitstring.          (* 256-bit fingerprint of the identity keys *)
+fun invite_id(key): bitstring.    (* identifier derived from the invite secret *)
+
+event InitAccept(pkey, pkey, key, key).
+event RespRunning(pkey, pkey, key, key).
+event RespAccept(pkey, pkey, key, key).
+
+(* Secrecy of the contact request and of B's reply, including after
+   the identity keys and invite secrets leak (phase 1). *)
+query attacker(requestA).
+query attacker(replyB).
+
+(* A, having checked B's key against the fingerprint, agrees with B. *)
+query ti: key, tr: key;
+  inj-event(InitAccept(pk(skA), pk(skB), ti, tr)) ==> inj-event(RespRunning(pk(skA), pk(skB), ti, tr)).
+
+(* B accepts a contact request as coming from A only if A sent it. *)
+query ti: key, tr: key;
+  inj-event(RespAccept(pk(skA), pk(skB), ti, tr)) ==> inj-event(InitAccept(pk(skA), pk(skB), ti, tr)).
+
+(* Sanity: an honest first contact completes. Must be reported false. *)
+query ti: key, tr: key; event(RespAccept(pk(skA), pk(skB), ti, tr)).
+
+let InitXX(skI: skey, f: bitstring, psk: key) =
+  let pkI = pk(skI) in
+  let h0 = hash(proto_xx, empty) in
+  let ck0 = h2k(proto_xx) in
+  (* psk0 *)
+  let ck1 = kdf_ck(ck0, psk) in
+  let k1 = kdf_k(ck0, psk) in
+  let id = invite_id(psk) in
+  let ha = hash(h0, id) in
+  (* message 1: e *)
+  new eI: skey;
+  let h1 = hash(ha, pk2b(pk(eI))) in
+  let c1 = aead_enc(k1, h1, empty) in
+  let h2 = hash(h1, c1) in
+  out(c, (id, pk(eI), c1));
+  (* message 2: ekem, s *)
+  in(c, (ct2: bitstring, cs: bitstring, c2: bitstring));
+  let ss2 = decap(eI, ct2) in
+  let h3 = hash(h2, ct2) in
+  let ck2 = kdf_ck(ck1, ss2) in
+  let k2 = kdf_k(ck1, ss2) in
+  let pk2b(pkR) = aead_dec(k2, h3, cs) in
+  let h4 = hash(h3, cs) in
+  if fp(pkR) = f then
+  let p2 = aead_dec(k2, h4, c2) in
+  let h5 = hash(h4, c2) in
+  (* message 3: skem, s *)
+  new r3: coins;
+  let ct3 = kem_ct(pkR, r3) in
+  let h6 = hash(h5, ct3) in
+  let ck3 = kdf_ck(ck2, kem_ss(pkR, r3)) in
+  let k3 = kdf_k(ck2, kem_ss(pkR, r3)) in
+  let csi = aead_enc(k3, h6, pk2b(pkI)) in
+  let h7 = hash(h6, csi) in
+  let c3 = aead_enc(k3, h7, empty) in
+  let h8 = hash(h7, c3) in
+  out(c, (ct3, csi, c3));
+  (* message 4: skem *)
+  in(c, (ct4: bitstring, c4: bitstring));
+  let ss4 = decap(skI, ct4) in
+  let h9 = hash(h8, ct4) in
+  let ck4 = kdf_ck(ck3, ss4) in
+  let k4 = kdf_k(ck3, ss4) in
+  let p4 = aead_dec(k4, h9, c4) in
+  let ti = split_i(ck4) in
+  let tr = split_r(ck4) in
+  event InitAccept(pkI, pkR, ti, tr);
+  (* message 5: contact request *)
+  if pkI = pk(skA) && pkR = pk(skB) then
+    out(c, aead_enc(ti, empty, requestA))
+  else
+    out(c, aead_enc(ti, empty, empty)).
+
+let RespXX(skR: skey, psk: key) =
+  let pkR = pk(skR) in
+  let h0 = hash(proto_xx, empty) in
+  let ck0 = h2k(proto_xx) in
+  let ck1 = kdf_ck(ck0, psk) in
+  let k1 = kdf_k(ck0, psk) in
+  (* message 1; an unknown invite id gets no answer *)
+  in(c, (id: bitstring, eI: pkey, c1: bitstring));
+  if id = invite_id(psk) then
+  let ha = hash(h0, id) in
+  let h1 = hash(ha, pk2b(eI)) in
+  let p1 = aead_dec(k1, h1, c1) in
+  let h2 = hash(h1, c1) in
+  (* message 2 *)
+  new r2: coins;
+  let ct2 = kem_ct(eI, r2) in
+  let h3 = hash(h2, ct2) in
+  let ck2 = kdf_ck(ck1, kem_ss(eI, r2)) in
+  let k2 = kdf_k(ck1, kem_ss(eI, r2)) in
+  let cs = aead_enc(k2, h3, pk2b(pkR)) in
+  let h4 = hash(h3, cs) in
+  let c2 = aead_enc(k2, h4, empty) in
+  let h5 = hash(h4, c2) in
+  out(c, (ct2, cs, c2));
+  (* message 3 *)
+  in(c, (ct3: bitstring, csi: bitstring, c3: bitstring));
+  let ss3 = decap(skR, ct3) in
+  let h6 = hash(h5, ct3) in
+  let ck3 = kdf_ck(ck2, ss3) in
+  let k3 = kdf_k(ck2, ss3) in
+  let pk2b(pkI) = aead_dec(k3, h6, csi) in
+  let h7 = hash(h6, csi) in
+  let p3 = aead_dec(k3, h7, c3) in
+  let h8 = hash(h7, c3) in
+  (* message 4 *)
+  new r4: coins;
+  let ct4 = kem_ct(pkI, r4) in
+  let h9 = hash(h8, ct4) in
+  let ck4 = kdf_ck(ck3, kem_ss(pkI, r4)) in
+  let k4 = kdf_k(ck3, kem_ss(pkI, r4)) in
+  let c4 = aead_enc(k4, h9, empty) in
+  let ti = split_i(ck4) in
+  let tr = split_r(ck4) in
+  event RespRunning(pkI, pkR, ti, tr);
+  out(c, (ct4, c4));
+  (* message 5: contact request, shown to B's user *)
+  in(c, req: bitstring);
+  let m5 = aead_dec(ti, empty, req) in
+  event RespAccept(pkI, pkR, ti, tr);
+  (* message 6: after acceptance *)
+  if pkI = pk(skA) && pkR = pk(skB) then
+    out(c, aead_enc(tr, empty, replyB)).
+
+process
+  (   (* invites from B to A, through a channel that delivers them unchanged *)
+      (!new psk: key; (out(linkch, (fp(pk(skB)), psk)) | RespXX(skB, psk) | (phase 1; out(c, psk))))
+      (* invites from B that reach the attacker *)
+    | (!new psk: key; out(c, (fp(pk(skB)), psk)); RespXX(skB, psk))
+      (* A opens links from B *)
+    | (!in(linkch, (f: bitstring, psk: key)); InitXX(skA, f, psk))
+      (* A opens links the attacker made *)
+    | (!in(c, (f: bitstring, psk: key)); InitXX(skA, f, psk))
+    | (phase 1; out(c, skA); out(c, skB)) )
