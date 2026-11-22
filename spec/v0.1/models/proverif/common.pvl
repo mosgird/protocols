@@ -1,0 +1,44 @@
+(* Mosgird session protocol: shared symbolic primitives.
+   DRAFT drafted by an AI tool. Not a proof until a human with
+   ProVerif experience has reviewed every line (decision 0013).
+
+   Abstractions (symbolic model; see README.md):
+   - X-Wing is an ideal KEM: the shared secret is derivable only
+     from the ciphertext and the matching secret key, or from the
+     encapsulation coins.
+   - XChaCha20-Poly1305 is an ideal AEAD. Nonces are left out,
+     because every key here is used for a fixed, small number of
+     messages with distinct associated data.
+   - Keyed BLAKE2b is modelled by one-way functions: transcript
+     hash, the two outputs of the Noise MixKey step, and Split. *)
+
+type skey.
+type pkey.
+type coins.
+type key.
+
+free c: channel.
+
+(* KEM *)
+fun pk(skey): pkey.
+fun kem_ct(pkey, coins): bitstring.
+fun kem_ss(pkey, coins): key.
+reduc forall sk: skey, r: coins;
+  decap(sk, kem_ct(pk(sk), r)) = kem_ss(pk(sk), r).
+
+(* AEAD: key, associated data, plaintext *)
+fun aead_enc(key, bitstring, bitstring): bitstring.
+reduc forall k: key, ad: bitstring, m: bitstring;
+  aead_dec(k, ad, aead_enc(k, ad, m)) = m.
+
+(* Hashing and key derivation *)
+fun hash(bitstring, bitstring): bitstring.
+fun h2k(bitstring): key.          (* initial chaining key from the protocol name *)
+fun kdf_ck(key, key): key.        (* MixKey: new chaining key *)
+fun kdf_k(key, key): key.         (* MixKey: new cipher key *)
+fun split_i(key): key.            (* Split: initiator-to-responder transport key *)
+fun split_r(key): key.            (* Split: responder-to-initiator transport key *)
+
+fun pk2b(pkey): bitstring [data, typeConverter].
+
+const empty: bitstring.

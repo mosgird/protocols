@@ -37,6 +37,7 @@ Security and privacy are the primary constraint of this project. No component, f
 - Any new information that a party other than the intended participants can observe (a contact's device, a group member, a network observer, or a transport relay) must be added to `spec/v0.1/overview.md` section 3.3, or to an open question.
 - Do not add a server, a store-and-forward role, or a dependency on domain names. That would reverse decision 0005 and needs a new decision record.
 - Do not add a push service (FCM, APNs, UnifiedPush, or similar), even one that carries no content. Decision 0008 excludes them.
+- A change to the session protocol, the group protocol, or the first-contact flow updates its formal model in the same pull request (decision 0013). Models drafted by an AI tool count only after a human with the expertise reviews them line by line.
 - Do not invent cryptographic constructions. Reference the published designs: Post-Quantum Noise (Angel et al., CCS 2022), the generic double ratchet (Alwen, Coretti, Dodis, EUROCRYPT 2019), X-Wing, DCGKA (Weidner, Kleppmann, Hugenroth, Beresford, CCS 2021) and the two-party protocol it builds on, and the primitives of decision 0011 from libsodium and libcrux.
 - Do not weaken a stated requirement to make another goal easier. Record the conflict as an open question instead.
 
@@ -76,6 +77,6 @@ Security and privacy are the primary constraint of this project. No component, f
 
 ## Before you finish a task
 
-1. Run `python3 scripts/check_spec.py` and confirm it passes.
+1. Run `python3 scripts/check_spec.py` and confirm it passes. If the change touches `spec/v0.1/models/`, also run `python3 scripts/check_models.py` (see [the models README](spec/v0.1/models/README.md)).
 2. Re-read each changed file for the required sections and for stale cross-references.
 3. Push the branch and open a pull request with the template filled in.

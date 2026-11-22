@@ -1,0 +1,148 @@
+theory MosgirdRatchet
+begin
+
+/*
+ * Mosgird session protocol: the ratchet inside one connection
+ * (decision 0012), in the generic form of Alwen, Coretti and Dodis
+ * (EUROCRYPT 2019), with continuous key agreement from a KEM.
+ *
+ * DRAFT drafted by an AI tool. Not a proof until a human with
+ * Tamarin experience has reviewed every line (decision 0013).
+ *
+ * BOUNDED MODEL. One connection is unrolled into two changes of
+ * sending direction: A to B, then B to A. Each epoch carries one
+ * message in the same flight as its ratchet header. There are no
+ * loops, so Tamarin terminates. The unbounded version, with loop
+ * invariants, is open (see README.md). Two epochs are the fewest in
+ * which recovery is meaningful: both initial states may be revealed,
+ * A then generates a fresh KEM key, and B's reply encapsulates to it.
+ *
+ * Abstractions:
+ * - The handshake is abstracted: the devices start with a shared
+ *   secret root key and the responder's KEM key pair. The handshake
+ *   is modelled in ../proverif.
+ * - X-Wing is an ideal KEM, modelled as public-key encryption of a
+ *   fresh secret. XChaCha20-Poly1305 is symmetric encryption, and
+ *   keyed BLAKE2b is a hash.
+ * - Reveal rules give the attacker a device's whole state, in every
+ *   epoch, at any time.
+ */
+
+builtins: asymmetric-encryption, symmetric-encryption, hashing
+
+rule Start:
+    [ Fr(~tid), Fr(~rk), Fr(~sk) ]
+  --[ Start(~tid), KeyGen(~tid, pk(~sk)) ]->
+    [ RecvA0(~tid, ~rk, pk(~sk)), !StateA0(~tid, ~rk),
+      SndB0(~tid, ~rk, ~sk), !StateB0(~tid, <~rk, ~sk>), Out(pk(~sk)) ]
+
+/* A state can be revealed only while it exists: before the rule that
+   consumes and deletes it. Reveal rules read a persistent snapshot of
+   each state, so that they do not loop. */
+restriction reveal_only_live_state:
+  "All tid s #r #d. RevealState(tid, s) @ r & Deleted(tid, s) @ d ==> r < d"
+
+/* Epoch 1: A changes direction and sends. New KEM key pair,
+   encapsulation to the peer's latest key, new root key and chain. */
+rule Ratchet1_A:
+    let rk2 = h(<'rk', rk, ~k>)
+        ck  = h(<'ck', rk, ~k>)
+        mk  = h(<'mk', ck>)
+    in
+    [ RecvA0(tid, rk, pkP), Fr(~sk), Fr(~k), Fr(~m) ]
+  --[ RatchetSend(tid, 'A', ~k, pkP), KeyGen(tid, pk(~sk)), Sent(tid, 'A', ~m), Deleted(tid, 'A0') ]->
+    [ SndA1(tid, rk2, ~sk), !StateA1(tid, <rk2, ~sk>),
+      Out(<pk(~sk), aenc(~k, pkP), senc(~m, mk)>) ]
+
+/* Epoch 1: B receives: decapsulates with its latest secret key,
+   which it then deletes, and decrypts the message. */
+rule Accept1_B:
+    let rk2 = h(<'rk', rk, k>)
+        ck  = h(<'ck', rk, k>)
+        mk  = h(<'mk', ck>)
+    in
+    [ SndB0(tid, rk, sk), In(<pkP, aenc(k, pk(sk)), senc(m, mk)>) ]
+  --[ Received(tid, 'B', m), Deleted(tid, 'B0') ]->
+    [ RecvB1(tid, rk2, pkP), !StateB1(tid, rk2) ]
+
+rule RevealA1:
+    [ !StateA1(tid, x) ] --[ Reveal(tid, 'A'), RevealState(tid, 'A1') ]-> [ Out(x) ]
+
+rule RevealB1:
+    [ !StateB1(tid, x) ] --[ Reveal(tid, 'B'), RevealState(tid, 'B1') ]-> [ Out(x) ]
+
+/* Epoch 2: B changes direction and sends. New KEM key pair,
+   encapsulation to the peer's latest key, new root key and chain. */
+rule Ratchet2_B:
+    let rk2 = h(<'rk', rk, ~k>)
+        ck  = h(<'ck', rk, ~k>)
+        mk  = h(<'mk', ck>)
+    in
+    [ RecvB1(tid, rk, pkP), Fr(~sk), Fr(~k), Fr(~m) ]
+  --[ RatchetSend(tid, 'B', ~k, pkP), KeyGen(tid, pk(~sk)), Sent(tid, 'B', ~m), Deleted(tid, 'B1') ]->
+    [ SndB2(tid, rk2, ~sk), !StateB2(tid, <rk2, ~sk>),
+      Out(<pk(~sk), aenc(~k, pkP), senc(~m, mk)>) ]
+
+/* Epoch 2: A receives: decapsulates with its latest secret key,
+   which it then deletes, and decrypts the message. */
+rule Accept2_A:
+    let rk2 = h(<'rk', rk, k>)
+        ck  = h(<'ck', rk, k>)
+        mk  = h(<'mk', ck>)
+    in
+    [ SndA1(tid, rk, sk), In(<pkP, aenc(k, pk(sk)), senc(m, mk)>) ]
+  --[ Received(tid, 'A', m), Deleted(tid, 'A1') ]->
+    [ RecvA2(tid, rk2, pkP), !StateA2(tid, rk2) ]
+
+rule RevealB2:
+    [ !StateB2(tid, x) ] --[ Reveal(tid, 'B'), RevealState(tid, 'B2') ]-> [ Out(x) ]
+
+rule RevealA2:
+    [ !StateA2(tid, x) ] --[ Reveal(tid, 'A'), RevealState(tid, 'A2') ]-> [ Out(x) ]
+
+rule RevealA0:
+    [ !StateA0(tid, x) ] --[ Reveal(tid, 'A'), RevealState(tid, 'A0') ]-> [ Out(x) ]
+
+rule RevealB0:
+    [ !StateB0(tid, x) ] --[ Reveal(tid, 'B'), RevealState(tid, 'B0') ]-> [ Out(x) ]
+
+/* Sanity: all three epochs complete with no compromise. */
+lemma executable:
+  exists-trace
+  "Ex tid m1 m2 #i1 #j1 #i2 #j2.
+       Sent(tid, 'A', m1) @ i1 & Received(tid, 'B', m1) @ j1
+     & Sent(tid, 'B', m2) @ i2 & Received(tid, 'A', m2) @ j2
+     & i1 < j1 & j1 < i2 & i2 < j2
+     & not (Ex x #r. Reveal(tid, x) @ r)"
+
+/* Secrecy of messages when no state of the connection is revealed. */
+lemma secrecy:
+  "All tid me m #i #j. Sent(tid, me, m) @ i & K(m) @ j
+     ==> Ex x #r. Reveal(tid, x) @ r"
+
+/* Forward secrecy: revealing either device's state after a message
+   was received does not reveal that message. */
+lemma forward_secrecy:
+  "All tid me you m #i #l #j.
+       Sent(tid, me, m) @ i & Received(tid, you, m) @ l & K(m) @ j
+     ==> Ex x #r. Reveal(tid, x) @ r & r < l"
+
+/* Recovery after compromise (healing): once the peer has generated
+   a fresh KEM key pair and a ratchet step encapsulates to it, every
+   later message that is received is secret, unless a state is
+   revealed after that key was generated. Reveals before it, of both
+   devices, do not matter. */
+lemma post_compromise_security:
+  "All tid me you p m k pkT #i #l #j #s #g.
+       RatchetSend(tid, p, k, pkT) @ s & KeyGen(tid, pkT) @ g
+     & Sent(tid, me, m) @ i & (#s = #i | s < i)
+     & Received(tid, you, m) @ l & K(m) @ j
+     ==> Ex x #r. Reveal(tid, x) @ r & g < r"
+
+/* Sanity: reveals have an effect. Some trace with compromise leaks a
+   message, so the lemmas above are not trivially true. */
+lemma compromise_can_leak:
+  exists-trace
+  "Ex tid m #i #j. Sent(tid, 'B', m) @ i & K(m) @ j"
+
+end

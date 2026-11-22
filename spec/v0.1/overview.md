@@ -49,6 +49,12 @@ There is no server. What others can observe depends on who they are and on the t
 - The other device's identity KEM key, and the ephemeral keys and encapsulations of each handshake ([decision 0012](../decisions/0012-mosgird-session-protocol.md)). These are what the contact needs to derive the session keys. Nothing in them is signed, so they prove nothing to a third party.
 - When each connection starts, because every connection runs a new handshake.
 
+**At first contact ([decision 0014](../decisions/0014-first-contact-by-invite.md)):**
+
+- Anyone who sees an invite link or QR code, including every service it passes through, learns the inviting device's addresses and key fingerprint. Until the invite is used or expires, they can use it to send a contact request in the invited user's place.
+- The inviting device learns the requesting device's addresses and identity keys, and the text of the contact request, even if its user declines.
+- A device that does not hold a valid invite gets no answer, so it does not learn the inviting device's identity key or whether that device is online.
+
 **Members of a channel or group chat can observe:**
 
 - The membership of the group, which member sent each message, who added or removed whom, and when each member updates their keys. DCGKA does not hide this from members ([decision 0006](../decisions/0006-dcgka-for-groups.md)).
@@ -63,6 +69,10 @@ There is no server. What others can observe depends on who they are and on the t
 - Lookups of an onion service descriptor or an I2P lease set, by the directory relays or routers that serve them. The details are set by each network.
 - Near a device that uses local links: that it broadcasts or connects, and when. Discovery must not reveal stable identifiers to non-contacts. How is open.
 
+**Someone holding a copy of a device's storage, without its key store or passphrase ([decision 0015](../decisions/0015-protection-of-stored-data.md)), can observe:**
+
+- The number and size of stored records, and when they changed. The content is encrypted.
+
 **No one other than the intended participants can observe:**
 
 - Plaintext message content.
@@ -75,6 +85,7 @@ There is no server. What others can observe depends on who they are and on the t
 - **Device.** One installation of a client, holding its own key material. A device belongs to exactly one user. A user may have several devices.
 - **Address.** What the transport needs to reach a device. It is derived from key material, never from a domain name. Over the internet, a device has two addresses: a Tor onion address and an I2P destination ([decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md)). How addresses relate to the user identifier is **[open]**.
 - **Identity KEM key.** A device's long-term X-Wing key pair. Other devices encapsulate secrets to it during a handshake, which authenticates the device without a signature ([decision 0012](../decisions/0012-mosgird-session-protocol.md)).
+- **Invite.** A one-time link or QR code that lets one device send a contact request to another. It carries the inviting device's addresses, a fingerprint of its identity keys, and a secret ([decision 0014](../decisions/0014-first-contact-by-invite.md)).
 - **Handshake.** The interactive exchange that starts every connection between two devices. It follows the Post-Quantum Noise framework.
 - **Session.** The cryptographic state that two devices share for the length of one connection: the handshake result and the ratchet that follows it (decision 0012). It is deleted when the connection closes. In group contexts, membership is tracked by DCGKA group state, not by pairwise sessions (see [decision 0006](../decisions/0006-dcgka-for-groups.md)).
 - **Group.** A set of member devices that share DCGKA state. Each member keeps a ratchet for every member, and message keys come from the sender's ratchet.
@@ -95,7 +106,7 @@ This section describes the flow in plain language. Exact message formats are not
 
 The session protocol is defined in [decision 0012](../decisions/0012-mosgird-session-protocol.md).
 
-1. The sender's device holds the recipient device's address and identity KEM key. How it got them at first contact is **[open]** ([open question 13](open-questions.md#13-first-contact-without-a-directory)).
+1. The sender's device holds the recipient device's address and identity KEM key. At first contact, it got them from an invite link or QR code and a contact request that the recipient accepted ([decision 0014](../decisions/0014-first-contact-by-invite.md)).
 2. The sender's device keeps the message in its local storage until it can reach the recipient's device ([open question 14](open-questions.md#14-retry-expiry-and-relaying-under-online-only-delivery)). The message is not encrypted in advance under an earlier session.
 3. When the devices can reach each other, they run a new handshake. Each side encapsulates secrets to the other's identity KEM key and to fresh ephemeral keys, and both derive the same session keys. Nothing is signed.
 4. The sender's device encrypts each message with a new key from the ratchet and sends it. No other party stores it.

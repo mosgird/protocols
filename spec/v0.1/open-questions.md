@@ -251,6 +251,8 @@ Every option below carries ciphertext that is already end-to-end encrypted. The 
 
 ## 13. First contact without a directory
 
+**Status:** closed by [decision 0014](../decisions/0014-first-contact-by-invite.md): a one-time invite link or QR code (options A and B), then a contact request that the recipient accepts (option E). The open detail below is still open.
+
 **Question:** How does a device get another device's address and identity KEM key the first time, with no server to publish them?
 
 Since [decision 0012](../decisions/0012-mosgird-session-protocol.md), there are no pre-key bundles. A device needs only the other device's address and identity KEM key, and starts an interactive handshake. Options below that mention a bundle now mean those two items.
@@ -271,7 +273,9 @@ Since [decision 0012](../decisions/0012-mosgird-session-protocol.md), there are 
 **Open detail:**
 
 - One-time pre-keys: resolved by decision 0012. Each connection runs an interactive handshake with fresh ephemeral keys, so no pre-keys exist.
-- What a contact link or QR code carries. The identity KEM key is 1,216 bytes, so a link may carry the address and a fingerprint instead, with the key fetched over the transport and checked against the fingerprint.
+- What a contact link or QR code carries. Resolved by decision 0014: addresses, a fingerprint of the identity keys, and a one-time invite secret.
+- A public, reusable link for users who want to be reachable by people they have not invited. Decision 0014 does not support one. If one is added, requests from it need limits against spam, such as rate limits or proof of work, and each option costs reachability or battery.
+- Whether the Post-Quantum Noise paper's results cover the `psk` modifier that decision 0014 uses.
 
 ---
 
@@ -388,11 +392,14 @@ Delivery is online-only ([decision 0005](../decisions/0005-serverless-online-onl
 
 - How the Ed25519 and ML-DSA-87 parts of a signature are bound together (decision 0011). It must follow a published design so that neither part can be removed or replaced alone.
 - How the chosen option interacts with first contact ([question 13](#13-first-contact-without-a-directory)) and with the group protocol's two-party component ([question 15](#15-two-party-component-for-dcgka)).
+- How deniability is shown for the patterns of decision 0012. The symbolic provers that [decision 0013](../decisions/0013-formal-verification.md) requires do not check deniability in their usual form, so it needs a separate argument.
 - Group control messages are signed, because DCGKA requires it. Group membership changes are therefore not deniable to other members, even if direct messages are.
 
 ---
 
 ## 19. Protection of data stored on the device
+
+**Status:** closed by [decision 0015](../decisions/0015-protection-of-stored-data.md): encryption under a key held by the operating system's key store, always on (option A), and an optional passphrase (option B). There are no backups for now. Disappearing messages (option C) and the open detail below are still open.
 
 **Question:** How does a device protect what it stores: identity keys, contacts, message history, and messages waiting for delivery?
 
@@ -412,5 +419,7 @@ Forward secrecy ([decision 0012](../decisions/0012-mosgird-session-protocol.md))
 **Open detail:**
 
 - How long undelivered messages are kept ([question 14](#14-retry-expiry-and-relaying-under-online-only-delivery)).
-- Whether backups exist, and how they are encrypted ([question 5](#5-message-history-sync)).
-- Whether all of this is the same on every platform, which the core library ([decision 0010](../decisions/0010-shared-core-library.md)) makes possible.
+- Whether backups exist, and how they are encrypted ([question 5](#5-message-history-sync)). Resolved for v0.1 by decision 0015: no backups.
+- Whether all of this is the same on every platform, which the core library ([decision 0010](../decisions/0010-shared-core-library.md)) makes possible. Resolved by decision 0015: the core library encrypts records itself everywhere, and only the key store differs.
+- Whether stored records are padded, so that a copy of the storage does not reveal how much a user talks.
+- Disappearing messages: whether they are added, their default, and how the other device is asked to honour them.
