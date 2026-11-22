@@ -11,7 +11,7 @@ A specification version is `MAJOR.MINOR.PATCH`. Its documents live in `spec/vMAJ
 The public API of the specification is everything an implementation depends on:
 
 - the wire format: message and envelope encodings, field names, and their meanings;
-- every procedure whose output a test vector checks, such as key agreement, ratchet steps, and MLS epoch derivation;
+- every procedure whose output a test vector checks, such as key agreement, ratchet steps, and group key updates;
 - every requirement written with MUST, MUST NOT, or SHALL.
 
 Changes to editorial text, examples, links, and open-question notes that do not change any of the above are not a version change in themselves.

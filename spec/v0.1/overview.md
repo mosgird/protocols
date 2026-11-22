@@ -50,7 +50,7 @@ There is no server. What others can observe depends on who they are and on the t
 
 **Members of a channel or group chat can observe:**
 
-- The membership of the group, and which member sent each message.
+- The membership of the group, which member sent each message, who added or removed whom, and when each member updates their keys. DCGKA does not hide this from members ([decision 0006](../decisions/0006-dcgka-for-groups.md)).
 - The size and timing of each message, and the addresses of the members they talk to directly, unless the transport hides them.
 - Server and channel structure: names, roles, and membership. Whether non-members can learn any of this is **[open]** ([open question 7](open-questions.md#7-server-and-channel-structure-visibility)).
 
@@ -71,10 +71,12 @@ There is no server. What others can observe depends on who they are and on the t
 - **Device.** One installation of a client, holding its own key material. A device belongs to exactly one user. A user may have several devices.
 - **Address.** What the transport needs to reach a device. It is derived from key material, never from a domain name. Its format depends on the transport and is **[open]**.
 - **Pre-key bundle.** The public keys a device publishes so that another device can start an X3DH session with it (see [decision 0002](../decisions/0002-signal-for-direct-messages.md)).
-- **Session.** The cryptographic state shared by two devices for direct messages, as defined by the Double Ratchet (see [decision 0002](../decisions/0002-signal-for-direct-messages.md)). In group contexts, membership is tracked by group state, not by pairwise sessions (see [decision 0003](../decisions/0003-mls-for-groups.md)).
-- **Channel.** A named conversation inside a server. Each channel is a group in the sense of decision 0003. Membership is determined by the server's roles and permissions model, which is not specified in this document.
+- **Session.** The cryptographic state shared by two devices for direct messages, as defined by the Double Ratchet (see [decision 0002](../decisions/0002-signal-for-direct-messages.md)). In group contexts, membership is tracked by DCGKA group state, not by pairwise sessions (see [decision 0006](../decisions/0006-dcgka-for-groups.md)).
+- **Group.** A set of member devices that share DCGKA state. Each member keeps a ratchet for every member, and message keys come from the sender's ratchet.
+- **Causal order.** The order in which one message depends on another: a message sent after its sender processed another message comes after it. A member processes a group message only after all messages that come before it in causal order.
+- **Channel.** A named conversation inside a server. Each channel is one group. Membership is determined by the server's roles and permissions model, which is not specified in this document.
 - **Direct message.** A conversation between two users, encrypted with pairwise sessions.
-- **Group chat.** A conversation with more than two participants that is not part of a server.
+- **Group chat.** A conversation with more than two participants that is not part of a server. It is one group.
 - **Event.** A unit that one device sends to another. An event consists of an encrypted payload and the metadata the transport needs to deliver it. Event types (messages, membership changes, key updates, acknowledgments) are **[open]** in their full list.
 
 ## 5. Message flow
@@ -92,16 +94,16 @@ This section describes the flow in plain language. Exact message formats are not
 
 ### 5.2 Channel or group chat
 
-1. The group has a current MLS epoch. Each member device holds the epoch's secrets.
-2. When membership changes, a member device creates an MLS commit. The commit updates the group's keys so that removed devices cannot read later messages, and added devices receive what they need to join.
-3. The sending device encrypts the message under the current epoch's keys.
-4. The sending device delivers the ciphertext directly to each member device it can reach. No server acts as the MLS Delivery Service.
-5. Each member device decrypts the message with the keys for that epoch.
+The group protocol is DCGKA ([decision 0006](../decisions/0006-dcgka-for-groups.md)). The steps below summarize the paper. The paper is the reference.
 
-RFC 9420 assumes a Delivery Service that delivers commits so that members agree on their order. Without a server, how commits are delivered and ordered is **[open]** ([open question 9](open-questions.md#9-mls-ciphersuite-and-group-size-limits)).
+1. Each member device holds DCGKA state for the group, including a ratchet for each member.
+2. To add or remove a member, or to update its own keys, a member device sends a control message to all members by authenticated causal broadcast. Each control message is signed under the sender's identity key. Secrets meant for one member travel in a direct message encrypted with the two-party component ([open question 15](open-questions.md#15-two-party-component-for-dcgka)).
+3. Each member device processes a message only after every message that causally precedes it. Members may change membership concurrently, and they reach the same membership from the causal order. No member or server decides a single order.
+4. To send an application message, a device encrypts it with the next key from its own ratchet and delivers the ciphertext directly to each member device it can reach.
+5. Members acknowledge control messages. A member that is missing a message asks for it again. Who can re-send it under online-only delivery is **[open]** ([open question 14](open-questions.md#14-retry-expiry-and-relaying-under-online-only-delivery)).
 
 ## 6. References
 
-- RFC 9420, The Messaging Layer Security (MLS) Protocol.
+- M. Weidner, M. Kleppmann, D. Hugenroth, A. R. Beresford. Key Agreement for Decentralized Secure Group Messaging with Strong Security Guarantees. ACM CCS 2021, doi:10.1145/3460120.3484542. Extended version: IACR ePrint 2020/1281.
 - The Signal Protocol documents: X3DH Key Agreement and the Double Ratchet Algorithm, published by Signal.
 - libsodium, for cryptographic primitives. No cryptographic constructions are invented in this specification.

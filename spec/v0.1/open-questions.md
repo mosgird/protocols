@@ -144,18 +144,27 @@ Content policy itself is out of scope for the protocol. This question covers onl
 
 ---
 
-## 9. MLS ciphersuite and group size limits
+## 9. Group protocol primitives and group size limits
 
-**Question:** Which MLS ciphersuite is used, and what group sizes must be supported?
+Until [decision 0006](../decisions/0006-dcgka-for-groups.md), this question asked which MLS ciphersuite to use. DCGKA replaces MLS, so the question now covers DCGKA's primitives. The ordering problem that decision 0005 raised for MLS is handled by DCGKA's causal broadcast.
+
+**Question:** Which concrete primitives instantiate DCGKA, and what group sizes must be supported?
+
+DCGKA needs a signature scheme for authenticated causal broadcast, a key derivation function (the paper uses HKDF), an authenticated encryption scheme for application messages, and the primitives of the two-party component ([question 15](#15-two-party-component-for-dcgka)).
 
 **Options:**
 
-- **A. A single ciphersuite from RFC 9420's registry.** Fixed choice, with a version field in the protocol.
+- **A. One fixed set of primitives.** One choice, with a version field in the protocol.
   - Cost: no algorithm agility without a new version. Simpler to test.
-- **B. Negotiated ciphersuites.** Clients advertise support.
-  - Cost: downgrade risk must be addressed. More test matrix.
+- **B. Negotiated sets.** Clients advertise what they support.
+  - Cost: downgrade risk must be addressed. A larger test matrix.
 
-**Open detail:** the maximum channel size for v0.1, and the performance target for commits in large groups. These need measurements, which are not yet done. After decision 0005 there is no Delivery Service. RFC 9420 relies on one to deliver commits so that members agree on their order. How commits are delivered and ordered without a server is not decided.
+**Open detail:**
+
+- The maximum channel size for v0.1. The paper reports 70 ms of CPU and 40 kB of traffic per key update at 128 members, with cost growing linearly. Measurements on target devices are not yet done.
+- Whether every primitive is available in libsodium, as [decision 0002](../decisions/0002-signal-for-direct-messages.md) requires for direct messages.
+- How test vectors are produced. No published vectors exist for DCGKA, and the test-vector rule forbids copying them from an implementation.
+- How the team's choice of a post-quantum key exchange applies to groups.
 
 ---
 
@@ -185,7 +194,7 @@ The overview lists what contacts, group members, network observers, and transpor
 These points are not clear from the initial brief. They are recorded here instead of being assumed.
 
 - **"Server-independent identity."** Resolved by [decision 0005](../decisions/0005-serverless-online-only-delivery.md): there are no servers, so identity cannot depend on one. The overview now calls this goal "self-held identity".
-- **"Servers" in the product sense and MLS groups.** It is not decided whether one server is one large group, or whether each channel is its own group. This draft assumes each channel is its own group. "Server" in this sense is a community of channels, not a machine.
+- **"Servers" in the product sense and groups.** Resolved by [decision 0006](../decisions/0006-dcgka-for-groups.md): each channel is its own group, so a server with several channels has several groups. "Server" in this sense is a community of channels, not a machine.
 - **License.** The project uses Mulan PSL v2, as recorded in the repository's LICENSE.md file. Any future relicensing is not considered in v0.1.
 
 ---
@@ -257,6 +266,25 @@ Every option below carries ciphertext that is already end-to-end encrypted. The 
 - **B. Another device of the recipient.** A message may be delivered to any of the recipient's own devices, and that device passes it to the others. For example, a desktop that is online more often.
   - Cost: depends on multi-device handling ([question 3](#3-multi-device-key-handling)). It is the user's own device, not a server. It does not help users with one device.
 - **C. Relaying by group members.** A member who received a group message passes it on to members who were offline when it was sent.
-  - Cost: members store ciphertext for others and learn more about each other's online times. It may be needed by group protocols that require every member to receive every message. Whether this counts as store-and-forward under decision 0005 must be decided.
+  - Cost: members store ciphertext for others and learn more about each other's online times. Whether this counts as store-and-forward under decision 0005 must be decided. DCGKA ([decision 0006](../decisions/0006-dcgka-for-groups.md)) requires every member to eventually process every causally prior message. Without this option, only the original sender can re-send, and a group stalls for a member whenever that sender is offline.
 
 **Open detail:** the expiry time, what the sender is told about undelivered messages, and limits on storage.
+
+---
+
+## 15. Two-party component for DCGKA
+
+**Question:** Which two-party secure messaging (2SM) protocol does DCGKA use to send secrets to one member?
+
+DCGKA sends some secrets to a single member in a direct message, encrypted with a 2SM protocol (paper section 5.3). The paper states that the Signal protocol "does not suffice for our purposes because it heals from a compromise only after several rounds of communication, not with each message sent". It uses a protocol with optimal forward secrecy and post-compromise security from D. Jost, U. Maurer, M. Mularczyk, "Efficient Ratcheting: Almost-Optimal Guarantees for Secure Messaging", EUROCRYPT 2019 (full version: IACR ePrint 2018/954).
+
+**Options:**
+
+- **A. The protocol the paper uses (Jost, Maurer, Mularczyk).** Direct messages keep the Double Ratchet ([decision 0002](../decisions/0002-signal-for-direct-messages.md)).
+  - Cost: two different two-party protocols to implement and test. The 2SM protocol is less widely implemented than the Double Ratchet. Its cost on phones must be measured. The paper's security analysis applies.
+- **B. The Double Ratchet as the 2SM component.** One two-party protocol for everything.
+  - Cost: the paper says this does not suffice for its guarantees. The paper's security proof would not apply as stated, and new analysis would be needed. The project does not do that analysis itself. Not a recommended option.
+- **C. The paper's protocol for direct messages too.** Replace the Double Ratchet in decision 0002 with the same 2SM protocol, or treat a direct message as a two-member group.
+  - Cost: supersedes decision 0002. Loses the wide review and deployment of the Signal design. One two-party protocol to implement.
+
+**Open detail:** the paper requires that 2SM map identities to public keys through a public key infrastructure that includes ephemeral prekeys. Under decision 0005 those prekeys come from first contact ([question 13](#13-first-contact-without-a-directory)).

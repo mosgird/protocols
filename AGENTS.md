@@ -36,7 +36,7 @@ Security and privacy are the primary constraint of this project. No component, f
 - Every change must state its security and privacy impact in the pull request.
 - Any new information that a party other than the intended participants can observe (a contact's device, a group member, a network observer, or a transport relay) must be added to `spec/v0.1/overview.md` section 3.3, or to an open question.
 - Do not add a server, a store-and-forward role, or a dependency on domain names. That would reverse decision 0005 and needs a new decision record.
-- Do not invent cryptographic constructions. Reference the published designs: X3DH and the Double Ratchet (Signal), RFC 9420 (MLS), and libsodium primitives.
+- Do not invent cryptographic constructions. Reference the published designs: X3DH and the Double Ratchet (Signal), DCGKA (Weidner, Kleppmann, Hugenroth, Beresford, CCS 2021) and the two-party protocol it builds on, and libsodium primitives.
 - Do not weaken a stated requirement to make another goal easier. Record the conflict as an open question instead.
 
 ## AI-generated assets
