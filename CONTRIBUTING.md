@@ -21,7 +21,7 @@ Thank you for helping with this protocol. This page is the short guide for peopl
    ```
 
 4. Push the branch and open a pull request. Fill in the template completely, including the AI use and security and privacy sections.
-5. Both required checks must pass before merging: `spec-consistency` and `contribution-policy`.
+5. The required checks must pass before merging: `spec-consistency`, `contribution-policy`, and `actions-lock`. The last one checks that `.github/workflows/actions.lock` locks every action the workflows use. After changing a `uses:` line, run `gh actions-lock` (the GitHub CLI extension `github/gh-actions-lock`) and commit the updated lockfile.
 
 ## Commits and AI disclosure
 

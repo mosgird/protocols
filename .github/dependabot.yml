@@ -1,0 +1,18 @@
+# Dependabot opens version updates as pull requests. For actions it also
+# regenerates the matching entries in .github/workflows/actions.lock.
+#
+# A new release waits a week before Dependabot proposes it, so that a
+# compromised or broken release has time to be noticed and pulled.
+# Security updates are not delayed.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]

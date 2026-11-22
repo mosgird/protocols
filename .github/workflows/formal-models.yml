@@ -34,8 +34,8 @@ jobs:
     outputs:
       tamarin: ${{ steps.diff.outputs.tamarin }}
     steps:
-      # Pinned to a full commit SHA. The tag is kept as a comment for humans.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Locked to a commit in actions.lock (see actions-lock.yml).
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -57,11 +57,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Cache opam
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.opam
           key: opam-${{ env.OPAM_VERSION }}-ocaml-${{ env.OCAML_VERSION }}-proverif-${{ env.PROVERIF_VERSION }}
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Install Tamarin and Maude
