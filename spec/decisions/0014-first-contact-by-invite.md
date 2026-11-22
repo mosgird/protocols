@@ -50,7 +50,7 @@ This closes [open question 13](../v0.1/open-questions.md#13-first-contact-withou
   - B's addresses in a link work for as long as B's device uses them, which can be longer than the invite lasts. Changing addresses is part of [open question 12](../v0.1/open-questions.md#12-transport-and-addressing).
 - **Link size.** Two 32-byte addresses, a 32-byte fingerprint, a 32-byte secret, and a version: about 130 bytes, about 210 characters in base32. That fits a QR code that phone cameras read easily. The exact encoding is part of the specification text.
 - **To be checked by a cryptographer:** the Post-Quantum Noise paper defines KEM forms of the Noise patterns, but must be checked for how it treats the `psk` modifier.
-- **Formal model.** [Decision 0013](0013-formal-verification.md) requires that this flow is in the formal model. No model exists yet. The first model covers this flow together with decision 0012.
+- **Formal model.** [Decision 0013](0013-formal-verification.md) requires that this flow is in the formal model. The model is `handshake_xxpsk0.pv` in [spec/v0.1/models](../v0.1/models/README.md), next to the model of decision 0012's handshake between contacts.
 
 ## Alternatives considered
 
