@@ -2,52 +2,64 @@
 
 **Status:** draft.
 
-This document describes goals, non-goals, architecture, terminology and the message flow for v0.1 of the protocol. Items marked **[open]** are not decided. Each one is listed with options in [open-questions.md](open-questions.md). Decisions already taken are recorded in [../decisions/](../decisions/).
+This document describes goals, non-goals, architecture, terminology and the message flow for v0.1 of the protocol. Items marked **[open]** are not decided. Each one is listed with options in [open-questions.md](open-questions.md). Proposed decisions are recorded in [../decisions/](../decisions/). None is accepted yet.
 
 ## 1. Goals
 
 - **Security and privacy as the primary constraint.** Every component, feature, and deployment mode is designed under this requirement. None is exempt. Where another goal conflicts with security or privacy, the conflict is recorded as an open question. It is not resolved by weakening the requirement.
-- **Minimal metadata.** Reduce what the relay server learns about who communicates, when, and from where. The current gaps are listed in section 3.3 and tracked in [open question 10](open-questions.md#10-metadata-minimization).
-- **Private messaging.** Message content is readable only by the intended participants and their devices. The relay server cannot read it.
+- **No servers and no domain names.** Devices deliver messages to each other directly. No server stores, forwards, or orders anything for the protocol, and nothing depends on DNS (see [decision 0005](../decisions/0005-serverless-online-only-delivery.md)).
+- **Minimal metadata.** Reduce what parties other than the intended participants learn about who communicates, when, and from where. The current gaps are listed in section 3.3 and tracked in [open question 10](open-questions.md#10-metadata-minimization).
+- **Private messaging.** Message content is readable only by the intended participants and their devices.
 - **Group channels.** Servers contain channels. A channel is a multi-party conversation whose membership can change over time, and its keys follow membership changes.
-- **Server-independent identity.** A user's identity key material is generated and held by the user's devices. The server does not issue identities and cannot replace one without the user's devices detecting it. The identifier format is **[open]**.
-- **Readable specification.** Each mechanism is described well enough that an independent implementer can build an interoperable client or server.
+- **Self-held identity.** A user's identity key material is generated and held by the user's devices. No one issues identities. A substituted key is detected only if contacts verify keys ([open question 4](open-questions.md#4-key-verification-method)). The identifier format is **[open]**.
+- **Readable specification.** Each mechanism is described well enough that an independent implementer can build an interoperable client.
 
 ## 2. Non-goals (v0.1)
 
 - **Voice and video.** Not specified in v0.1.
 - **Monetization.** Not addressed by the protocol.
-- **Content policy.** The protocol does not define which content is permitted. Mechanisms for handling reports are an open question (see [open-questions.md](open-questions.md)). Policy itself is out of scope.
-- **Peer-to-peer message delivery.** Messages are delivered through the relay server. Peer-to-peer transports may be specified later for calls and file transfer (see [decision 0001](../decisions/0001-relay-based-e2ee.md)).
-- **Federation.** Not decided. v0.1 assumes a single official instance. Federation is an open question, not an assumed property.
+- **Content policy.** The protocol does not define which content is permitted. Mechanisms for handling reports are an open question (see [open question 6](open-questions.md#6-abuse-handling-for-an-encrypted-service)). Policy itself is out of scope.
+- **Delivery to offline devices.** A message is delivered only while both devices are reachable at the same time. Nothing stores messages for an offline device (see [decision 0005](../decisions/0005-serverless-online-only-delivery.md)).
 
 ## 3. Architecture
 
 ### 3.1 Components
 
-- **Client.** Software running on a user's device. It generates and stores key material, encrypts outgoing messages, decrypts incoming messages, and manages local state. Implemented in `mosgird/client`.
-- **Relay server.** Stores and forwards ciphertext. It also stores public key material that clients need in order to start encrypted sessions, such as pre-key bundles. It never receives private keys or plaintext. Implemented in `mosgird/server`.
+- **Client.** Software running on a user's device. It generates and stores key material, encrypts outgoing messages, decrypts incoming messages, delivers ciphertext to other devices, keeps undelivered ciphertext until it is delivered, and manages local state. Implemented in `mosgird/client` and `mosgird/android`.
+- **Transport.** The means by which one device finds and reaches another, using an address derived from key material. It carries ciphertext and is not trusted with content. The transport is **[open]** ([open question 12](open-questions.md#12-transport-and-addressing)).
 
-Implementations are not part of this specification. Their repositories name the version of the specification they follow (see [VERSIONING.md](../VERSIONING.md)).
-- **Official instance.** The single deployment in v0.1. A client connects to one relay server.
+The protocol has no server component. Implementations are not part of this specification. Their repositories name the version of the specification they follow (see [VERSIONING.md](../VERSIONING.md)).
 
 ### 3.2 Trust model
 
 - Clients trust their own key material. Each device keeps its private keys locally.
-- The relay server is not trusted with message confidentiality. It is trusted to deliver messages and to serve public keys, but a dishonest server could serve false public keys. Detection of this is covered by key verification ([open](open-questions.md#4-key-verification-method)).
+- A contact's device is trusted with the messages addressed to it, and with nothing else.
+- The transport and the network are not trusted. They may observe, delay, drop, replay, or reorder traffic. They cannot read or forge content without breaking the end-to-end encryption.
+- A device can present false key material for someone else, for example when passing on a contact's pre-key bundle. Detection depends on key verification ([open question 4](open-questions.md#4-key-verification-method)).
 
-### 3.3 What the server can and cannot observe
+### 3.3 What other parties can observe
 
-**The server can observe:**
+There is no server. What others can observe depends on who they are and on the transport, which is **[open]**.
 
-- Ciphertext of every message, and the approximate size of each message.
-- Timing: when messages are sent, when they are delivered, and when devices come online.
-- Sender and recipient identifiers as they appear on the wire (user and device identifiers).
-- IP addresses of connecting clients.
-- Which devices are members of a channel or group chat, to the extent that delivery requires this. Whether the server learns more than this is **[open]**.
-- Server and channel structure, such as the existence of a server and its channels. Whether names and roles are visible to the server is **[open]**.
+**A contact's device, while exchanging messages directly, can observe:**
 
-**The server cannot observe:**
+- The other device's network address, unless the transport hides it ([open question 12](open-questions.md#12-transport-and-addressing)).
+- When the other device is online and reachable.
+- The size and timing of each message, and how often the sender retries.
+- The sender's identity public key and ephemeral key in the first message of a session. X3DH sends them in that message so that the recipient can derive the shared secret.
+
+**Members of a channel or group chat can observe:**
+
+- The membership of the group, and which member sent each message.
+- The size and timing of each message, and the addresses of the members they talk to directly, unless the transport hides them.
+- Server and channel structure: names, roles, and membership. Whether non-members can learn any of this is **[open]** ([open question 7](open-questions.md#7-server-and-channel-structure-visibility)).
+
+**Network observers and transport relays can observe**, depending on the transport:
+
+- That two network addresses exchange traffic, when, and how much. Transports that route through relays, such as onion routing or mixnets, are designed to hide some or all of this. Which properties hold is set by the transport choice.
+- Lookups in any shared directory the transport uses, such as a distributed hash table.
+
+**No one other than the intended participants can observe:**
 
 - Plaintext message content.
 - Private identity keys, session keys, or group secrets.
@@ -57,11 +69,13 @@ Implementations are not part of this specification. Their repositories name the 
 
 - **User.** A person's identity in the system. A user is identified by an identifier derived from or bound to identity key material. The identifier format is **[open]**.
 - **Device.** One installation of a client, holding its own key material. A device belongs to exactly one user. A user may have several devices.
-- **Session.** The cryptographic state shared by two devices for direct messages, as defined by the Double Ratchet (see [decision 0002](../decisions/0002-signal-for-direct-messages.md)). In group contexts, membership is tracked by MLS group state, not by pairwise sessions (see [decision 0003](../decisions/0003-mls-for-groups.md)).
-- **Channel.** A named conversation inside a server. Each channel is an MLS group. Membership is determined by the server's roles and permissions model, which is not specified in this document.
+- **Address.** What the transport needs to reach a device. It is derived from key material, never from a domain name. Its format depends on the transport and is **[open]**.
+- **Pre-key bundle.** The public keys a device publishes so that another device can start an X3DH session with it (see [decision 0002](../decisions/0002-signal-for-direct-messages.md)).
+- **Session.** The cryptographic state shared by two devices for direct messages, as defined by the Double Ratchet (see [decision 0002](../decisions/0002-signal-for-direct-messages.md)). In group contexts, membership is tracked by group state, not by pairwise sessions (see [decision 0003](../decisions/0003-mls-for-groups.md)).
+- **Channel.** A named conversation inside a server. Each channel is a group in the sense of decision 0003. Membership is determined by the server's roles and permissions model, which is not specified in this document.
 - **Direct message.** A conversation between two users, encrypted with pairwise sessions.
-- **Group chat.** A conversation with more than two participants that is not part of a server. It is an MLS group.
-- **Event.** A unit that the server stores and forwards. An event consists of an encrypted payload and the routing metadata the server needs to deliver it. Event types (messages, membership changes, key updates) are **[open]** in their full list.
+- **Group chat.** A conversation with more than two participants that is not part of a server.
+- **Event.** A unit that one device sends to another. An event consists of an encrypted payload and the metadata the transport needs to deliver it. Event types (messages, membership changes, key updates, acknowledgments) are **[open]** in their full list.
 
 ## 5. Message flow
 
@@ -69,22 +83,22 @@ This section describes the flow in plain language. Exact message formats are not
 
 ### 5.1 Direct message
 
-1. The sender's device asks the relay server for the recipient's public pre-key bundle.
-2. The sender's device uses the bundle to run the X3DH key agreement and derive a shared secret. It does not need the recipient to be online.
+1. The sender's device holds the recipient device's pre-key bundle and address. How it got them at first contact is **[open]** ([open question 13](open-questions.md#13-first-contact-without-a-directory)).
+2. The sender's device uses the bundle to run the X3DH key agreement and derive a shared secret.
 3. The sender's device encrypts the message with the Double Ratchet, using keys derived from that shared secret. Each message uses a new key, which gives forward secrecy.
-4. The sender's device sends the ciphertext to the relay server, addressed to the recipient's device.
-5. The relay server stores the ciphertext until the recipient's device fetches it, then forwards it. It does not decrypt it.
-6. The recipient's device runs its half of X3DH, derives the same secret, and decrypts the message with the Double Ratchet.
+4. The sender's device tries to reach the recipient's device over the transport. If it cannot, it keeps the ciphertext and retries later ([open question 14](open-questions.md#14-retry-expiry-and-relaying-under-online-only-delivery)).
+5. When the devices can reach each other, the sender's device delivers the ciphertext. No other party stores it.
+6. The recipient's device runs its half of X3DH, derives the same secret, and decrypts the message with the Double Ratchet. It acknowledges delivery so that the sender can delete the stored ciphertext. The acknowledgment format is **[open]**.
 
 ### 5.2 Channel or group chat
 
 1. The group has a current MLS epoch. Each member device holds the epoch's secrets.
 2. When membership changes, a member device creates an MLS commit. The commit updates the group's keys so that removed devices cannot read later messages, and added devices receive what they need to join.
 3. The sending device encrypts the message under the current epoch's keys.
-4. The relay server delivers the ciphertext to each member device, which is the role of the MLS Delivery Service.
+4. The sending device delivers the ciphertext directly to each member device it can reach. No server acts as the MLS Delivery Service.
 5. Each member device decrypts the message with the keys for that epoch.
 
-Commit ordering, handling of concurrent commits, and the exact delivery semantics are defined by RFC 9420 and must be checked against it when the spec is written in full. Details that depend on the relay's behavior are **[open]**.
+RFC 9420 assumes a Delivery Service that delivers commits so that members agree on their order. Without a server, how commits are delivered and ordered is **[open]** ([open question 9](open-questions.md#9-mls-ciphersuite-and-group-size-limits)).
 
 ## 6. References
 

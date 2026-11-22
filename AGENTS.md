@@ -4,9 +4,9 @@ Instructions for AI agents and human contributors working in this repository.
 
 ## Scope
 
-This repository is the source of truth for implementation details. Agents, developers, and users look here first. Before implementing, changing, or documenting protocol behavior in `mosgird/client`, `mosgird/server`, or `mosgird/android`, read the specification here, starting with `spec/v0.1/overview.md` and `spec/decisions/`. If an implementation disagrees with this repository, the specification is correct; propose a change here before changing behavior there.
+This repository is the source of truth for implementation details. Agents, developers, and users look here first. Before implementing, changing, or documenting protocol behavior in `mosgird/client` or `mosgird/android`, read the specification here, starting with `spec/v0.1/overview.md` and `spec/decisions/`. If an implementation disagrees with this repository, the specification is correct; propose a change here before changing behavior there.
 
-This repository holds the protocol specification. In v0.1 it contains no client or server code. Do not add implementation code under `client/` or `server/` unless a merged decision record says to.
+This repository holds the protocol specification. It contains no implementation code. Implementations live in their own repositories ([decision 0004](spec/decisions/0004-separate-implementation-repositories.md)). The protocol has no server component ([decision 0005](spec/decisions/0005-serverless-online-only-delivery.md)).
 
 ## Workflow
 
@@ -34,7 +34,8 @@ This repository holds the protocol specification. In v0.1 it contains no client 
 Security and privacy are the primary constraint of this project. No component, feature, or deployment mode is exempt.
 
 - Every change must state its security and privacy impact in the pull request.
-- Any new information that the relay server can observe must be added to `spec/v0.1/overview.md` section 3.3, or to an open question.
+- Any new information that a party other than the intended participants can observe (a contact's device, a group member, a network observer, or a transport relay) must be added to `spec/v0.1/overview.md` section 3.3, or to an open question.
+- Do not add a server, a store-and-forward role, or a dependency on domain names. That would reverse decision 0005 and needs a new decision record.
 - Do not invent cryptographic constructions. Reference the published designs: X3DH and the Double Ratchet (Signal), RFC 9420 (MLS), and libsodium primitives.
 - Do not weaken a stated requirement to make another goal easier. Record the conflict as an open question instead.
 

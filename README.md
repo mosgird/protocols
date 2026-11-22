@@ -13,7 +13,9 @@ It contains the specification, the decision records behind it, the test vectors 
 | Repository | Role |
 |------------|------|
 | [mosgird/client](https://github.com/mosgird/client) | Client application |
-| [mosgird/server](https://github.com/mosgird/server) | Relay server |
+| [mosgird/android](https://github.com/mosgird/android) | Android application |
+
+The protocol has no server. Devices deliver messages to each other directly ([decision 0005](spec/decisions/0005-serverless-online-only-delivery.md)).
 
 Each implementation names the version of this specification it implements. When an implementation and this specification disagree, the specification is correct and the implementation has a bug, or the specification needs a change proposed here.
 

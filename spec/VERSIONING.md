@@ -1,6 +1,6 @@
 # Versioning
 
-Mosgird uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) for the specification, the client, and the server. This document says how the rules apply to each of them.
+Mosgird uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) for the specification and for each implementation (`mosgird/client` and `mosgird/android`). This document says how the rules apply to each of them.
 
 ## Specification
 
@@ -43,16 +43,13 @@ A release is made only when:
 2. the test vectors for that version exist and pass the checks;
 3. the release notes list each change since the previous tag and mark each one as breaking or not.
 
-## Client and server
+## Implementations
 
-The client and the server each follow SemVer for their own releases, with the same tag format and the same tag protection.
+Each implementation follows SemVer for its own releases, with the same tag format and the same tag protection.
 
-Their public API is:
+Its public API is the library interface that other code calls, the behavior a user can observe, and the local storage format it writes.
 
-- for the client: the library interface that other code calls, and the behavior a user can observe;
-- for the server: its wire API, its configuration, and the storage it writes.
-
-A client or server release states the specification version it implements, in its README and its release notes. For example: "Implements mosgird/protocols `v0.1.0`."
+An implementation release states the specification version it implements, in its README and its release notes. For example: "Implements mosgird/protocols `v0.1.0`."
 
 Implementation versions and specification versions are separate. A client `1.4.2` may implement specification `0.1.0`. An implementation adopts a newer specification by its own pull request, which must pass the test vectors for that specification version. Adopting a breaking specification version is a breaking change for the implementation, so it takes a MAJOR bump, or a MINOR bump while the implementation is `0.y.z`.
 
