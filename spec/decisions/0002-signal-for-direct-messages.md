@@ -1,6 +1,6 @@
 # 0002. Signal protocol design for direct messages
 
-**Status:** Proposed
+**Status:** Superseded by [0012](0012-mosgird-session-protocol.md)
 
 ## Context
 

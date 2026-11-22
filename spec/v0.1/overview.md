@@ -25,7 +25,7 @@ This document describes goals, non-goals, architecture, terminology and the mess
 
 ### 3.1 Components
 
-- **Client.** Software running on a user's device. It generates and stores key material, encrypts outgoing messages, decrypts incoming messages, delivers ciphertext to other devices, keeps undelivered ciphertext until it is delivered, and manages local state. The protocol, cryptography, storage, and transports are implemented once in the shared library `mosgird/core`. The applications `mosgird/client` and `mosgird/android` add the user interface ([decision 0010](../decisions/0010-shared-core-library.md)).
+- **Client.** Software running on a user's device. It generates and stores key material, encrypts outgoing messages, decrypts incoming messages, delivers ciphertext to other devices, keeps undelivered messages in protected local storage until it can deliver them, and manages local state. The protocol, cryptography, storage, and transports are implemented once in the shared library `mosgird/core`. The applications `mosgird/client` and `mosgird/android` add the user interface ([decision 0010](../decisions/0010-shared-core-library.md)).
 - **Transport.** The means by which one device finds and reaches another, using an address derived from key material. It carries ciphertext and is not trusted with content. Over the internet, the transports are Tor onion services and I2P. Local links (Bluetooth, Wi-Fi Direct, the local network) are a fallback for when the internet is unavailable. Every link is encrypted and authenticated, and no client connects directly over the internet ([decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md)).
 
 The protocol has no server component. Implementations are not part of this specification. Their repositories name the version of the specification they follow (see [VERSIONING.md](../VERSIONING.md)).
@@ -35,7 +35,7 @@ The protocol has no server component. Implementations are not part of this speci
 - Clients trust their own key material. Each device keeps its private keys locally.
 - A contact's device is trusted with the messages addressed to it, and with nothing else.
 - The transport and the network are not trusted. They may observe, delay, drop, replay, or reorder traffic. They cannot read or forge content without breaking the end-to-end encryption.
-- A device can present false key material for someone else, for example when passing on a contact's pre-key bundle. Detection depends on key verification ([open question 4](open-questions.md#4-key-verification-method)).
+- A device can present false key material for someone else, for example when passing on a contact's identity KEM key or contact link. Detection depends on key verification ([open question 4](open-questions.md#4-key-verification-method)).
 
 ### 3.3 What other parties can observe
 
@@ -46,7 +46,8 @@ There is no server. What others can observe depends on who they are and on the t
 - The other device's onion address and I2P destination, and that both belong to the same device. Over Tor and I2P, it does not learn the other device's network address. Over a local link, it learns the local link address.
 - When the other device is online and reachable.
 - The size and timing of each message, and how often the sender retries.
-- The sender's identity public key and ephemeral key in the first message of a session. X3DH sends them in that message so that the recipient can derive the shared secret.
+- The other device's identity KEM key, and the ephemeral keys and encapsulations of each handshake ([decision 0012](../decisions/0012-mosgird-session-protocol.md)). These are what the contact needs to derive the session keys. Nothing in them is signed, so they prove nothing to a third party.
+- When each connection starts, because every connection runs a new handshake.
 
 **Members of a channel or group chat can observe:**
 
@@ -73,8 +74,9 @@ There is no server. What others can observe depends on who they are and on the t
 - **User.** A person's identity in the system. A user is identified by an identifier derived from or bound to identity key material. The identifier format is **[open]**.
 - **Device.** One installation of a client, holding its own key material. A device belongs to exactly one user. A user may have several devices.
 - **Address.** What the transport needs to reach a device. It is derived from key material, never from a domain name. Over the internet, a device has two addresses: a Tor onion address and an I2P destination ([decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md)). How addresses relate to the user identifier is **[open]**.
-- **Pre-key bundle.** The public keys a device publishes so that another device can start an X3DH session with it (see [decision 0002](../decisions/0002-signal-for-direct-messages.md)).
-- **Session.** The cryptographic state shared by two devices for direct messages, as defined by the Double Ratchet (see [decision 0002](../decisions/0002-signal-for-direct-messages.md)). In group contexts, membership is tracked by DCGKA group state, not by pairwise sessions (see [decision 0006](../decisions/0006-dcgka-for-groups.md)).
+- **Identity KEM key.** A device's long-term X-Wing key pair. Other devices encapsulate secrets to it during a handshake, which authenticates the device without a signature ([decision 0012](../decisions/0012-mosgird-session-protocol.md)).
+- **Handshake.** The interactive exchange that starts every connection between two devices. It follows the Post-Quantum Noise framework.
+- **Session.** The cryptographic state that two devices share for the length of one connection: the handshake result and the ratchet that follows it (decision 0012). It is deleted when the connection closes. In group contexts, membership is tracked by DCGKA group state, not by pairwise sessions (see [decision 0006](../decisions/0006-dcgka-for-groups.md)).
 - **Group.** A set of member devices that share DCGKA state. Each member keeps a ratchet for every member, and message keys come from the sender's ratchet.
 - **Causal order.** The order in which one message depends on another: a message sent after its sender processed another message comes after it. A member processes a group message only after all messages that come before it in causal order.
 - **Community.** A named set of channels, with members and roles ([decision 0007](../decisions/0007-communities.md)). It is not a machine. The brief called this a "server"; the specification does not.
@@ -91,12 +93,14 @@ This section describes the flow in plain language. Exact message formats are not
 
 ### 5.1 Direct message
 
-1. The sender's device holds the recipient device's pre-key bundle and address. How it got them at first contact is **[open]** ([open question 13](open-questions.md#13-first-contact-without-a-directory)).
-2. The sender's device uses the bundle to run the X3DH key agreement and derive a shared secret.
-3. The sender's device encrypts the message with the Double Ratchet, using keys derived from that shared secret. Each message uses a new key, which gives forward secrecy.
-4. The sender's device tries to reach the recipient's device over the transport. If it cannot, it keeps the ciphertext and retries later ([open question 14](open-questions.md#14-retry-expiry-and-relaying-under-online-only-delivery)).
-5. When the devices can reach each other, the sender's device delivers the ciphertext. No other party stores it.
-6. The recipient's device runs its half of X3DH, derives the same secret, and decrypts the message with the Double Ratchet. It acknowledges delivery so that the sender can delete the stored ciphertext. The acknowledgment format is **[open]**.
+The session protocol is defined in [decision 0012](../decisions/0012-mosgird-session-protocol.md).
+
+1. The sender's device holds the recipient device's address and identity KEM key. How it got them at first contact is **[open]** ([open question 13](open-questions.md#13-first-contact-without-a-directory)).
+2. The sender's device keeps the message in its local storage until it can reach the recipient's device ([open question 14](open-questions.md#14-retry-expiry-and-relaying-under-online-only-delivery)). The message is not encrypted in advance under an earlier session.
+3. When the devices can reach each other, they run a new handshake. Each side encapsulates secrets to the other's identity KEM key and to fresh ephemeral keys, and both derive the same session keys. Nothing is signed.
+4. The sender's device encrypts each message with a new key from the ratchet and sends it. No other party stores it.
+5. The recipient's device decrypts the message and deletes its key. It acknowledges delivery so that the sender can delete the stored message. The acknowledgment format is **[open]**.
+6. When the connection closes, both devices delete the session.
 
 ### 5.2 Channel or group chat
 
@@ -111,7 +115,9 @@ The group protocol is DCGKA ([decision 0006](../decisions/0006-dcgka-for-groups.
 ## 6. References
 
 - M. Weidner, M. Kleppmann, D. Hugenroth, A. R. Beresford. Key Agreement for Decentralized Secure Group Messaging with Strong Security Guarantees. ACM CCS 2021, doi:10.1145/3460120.3484542. Extended version: IACR ePrint 2020/1281.
-- The Signal Protocol documents: X3DH Key Agreement and the Double Ratchet Algorithm, published by Signal.
+- Y. Angel, B. Dowling, A. Hülsing, P. Schwabe, F. Weber. Post Quantum Noise. ACM CCS 2022.
+- J. Alwen, S. Coretti, Y. Dodis. The Double Ratchet: Security Notions, Proofs, and Modularization for the Signal Protocol. EUROCRYPT 2019. IACR ePrint 2018/1037.
+- X-Wing: the hybrid KEM in the IETF draft draft-connolly-cfrg-xwing-kem.
 - The Tor Project's specifications for version 3 onion services, and the I2P project's specifications, including the network database and SAM version 3.
 - The Noise Protocol Framework, by T. Perrin, as a candidate for the handshake on local links.
 - libsodium, for cryptographic primitives. No cryptographic constructions are invented in this specification.

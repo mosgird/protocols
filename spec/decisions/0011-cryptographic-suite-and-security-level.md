@@ -41,7 +41,7 @@ Further rules:
 - **No standard format combines Ed25519 and ML-DSA-87.** As far as found, the IETF's draft composite signatures pair ML-DSA-87 with other classical algorithms. How the two signatures are bound together is an open detail of question 18. It must follow a published design, so that neither part can be removed or replaced alone. A cryptographer must review it.
 - **libcrux's ML-DSA code had bugs that escaped its formal verification** (ePrint 2026/192). The version used must include their fixes.
 - **Larger keys and signatures.** An X-Wing public key is 1,216 bytes and its ciphertext 1,120 bytes. An ML-DSA-87 signature is about 4.6 KB. Contact links and QR codes carry an address and a fingerprint, and the full keys are exchanged over the transport ([open question 13](../v0.1/open-questions.md#13-first-contact-without-a-directory)).
-- **Decision 0002 is not yet replaced.** It names X3DH and the Double Ratchet, which use only X25519, and libsodium alone. The team wants Mosgird's own structure, built from these primitives and from published concepts. That structure is the next decision, and it will supersede 0002.
+- **Decision 0002 is replaced.** It named X3DH and the Double Ratchet, which use only X25519. The team wants Mosgird's own structure, built from these primitives and from published concepts. [Decision 0012](0012-mosgird-session-protocol.md) defines it and supersedes 0002.
 - **BLAKE2b is used less often as a key derivation function** than HKDF with SHA-2 in published designs. Every use must be specified exactly, including keys, personalization strings, and output lengths, and be covered by test vectors.
 
 ## Alternatives considered
