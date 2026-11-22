@@ -36,6 +36,7 @@ The protocol has no server component. Implementations are not part of this speci
 - A contact's device is trusted with the messages addressed to it, and with nothing else.
 - The transport and the network are not trusted. They may observe, delay, drop, replay, or reorder traffic. They cannot read or forge content without breaking the end-to-end encryption.
 - A device can present false key material for someone else, for example when passing on a contact's identity KEM key or contact link. Detection depends on key verification ([open question 4](open-questions.md#4-key-verification-method)).
+- A user's devices trust a device list signed by their own user key. A contact's device sends nothing to a device of that user until its own user approves it, and never to a device its user distrusted ([decision 0016](../decisions/0016-user-identity-and-linked-devices.md)). Whoever holds a user's primary device can sign device lists for that user.
 
 ### 3.3 What other parties can observe
 
@@ -48,6 +49,15 @@ There is no server. What others can observe depends on who they are and on the t
 - The size and timing of each message, and how often the sender retries.
 - The other device's identity KEM key, and the ephemeral keys and encapsulations of each handshake ([decision 0012](../decisions/0012-mosgird-session-protocol.md)). These are what the contact needs to derive the session keys. Nothing in them is signed, so they prove nothing to a third party.
 - When each connection starts, because every connection runs a new handshake.
+
+**A contact, from the device lists it receives ([decision 0016](../decisions/0016-user-identity-and-linked-devices.md)), can observe:**
+
+- The user key, and every device of the user: how many there are, their public keys and addresses, and that they belong to one person.
+- When the user links or removes a device, from the list's version and content.
+- That the list is signed by the user key and agreed to by each device. These signatures can be shown to a third party, so who owns which devices is not deniable. Messages stay deniable.
+- Members of a group observe the same about the devices that are members of that group.
+
+Which devices a user approves, holds, or distrusts is stored only on that user's devices and is never sent.
 
 **At first contact ([decision 0014](../decisions/0014-first-contact-by-invite.md)):**
 
@@ -81,9 +91,12 @@ There is no server. What others can observe depends on who they are and on the t
 
 ## 4. Terminology
 
-- **User.** A person's identity in the system. A user is identified by an identifier derived from or bound to identity key material. The identifier format is **[open]**.
-- **Device.** One installation of a client, holding its own key material. A device belongs to exactly one user. A user may have several devices.
-- **Address.** What the transport needs to reach a device. It is derived from key material, never from a domain name. Over the internet, a device has two addresses: a Tor onion address and an I2P destination ([decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md)). How addresses relate to the user identifier is **[open]**.
+- **User.** A person's identity in the system. A user is identified by the *user identifier*, a 256-bit fingerprint of the user key ([decision 0016](../decisions/0016-user-identity-and-linked-devices.md)).
+- **User key.** A user's long-term hybrid signature key pair, Ed25519 and ML-DSA-87. It lives only on the primary device and signs the device list.
+- **Primary device.** The device that holds the user key: the first device, unless the role was handed over to another of the user's devices.
+- **Device list.** The list of a user's devices, with their public keys and addresses, signed by the user key and carrying a version number.
+- **Device.** One installation of a client, holding its own key material. A device belongs to exactly one user. A user may have several devices. A contact's device is *approved*, *held*, or *distrusted* on each of the user's own devices (decision 0016).
+- **Address.** What the transport needs to reach a device. It is derived from key material, never from a domain name. Over the internet, a device has two addresses: a Tor onion address and an I2P destination ([decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md)). Addresses belong to devices, not to users, and are listed in the device list.
 - **Identity KEM key.** A device's long-term X-Wing key pair. Other devices encapsulate secrets to it during a handshake, which authenticates the device without a signature ([decision 0012](../decisions/0012-mosgird-session-protocol.md)).
 - **Invite.** A one-time link or QR code that lets one device send a contact request to another. It carries the inviting device's addresses, a fingerprint of its identity keys, and a secret ([decision 0014](../decisions/0014-first-contact-by-invite.md)).
 - **Handshake.** The interactive exchange that starts every connection between two devices. It follows the Post-Quantum Noise framework.
@@ -106,7 +119,7 @@ This section describes the flow in plain language. Exact message formats are not
 
 The session protocol is defined in [decision 0012](../decisions/0012-mosgird-session-protocol.md).
 
-1. The sender's device holds the recipient device's address and identity KEM key. At first contact, it got them from an invite link or QR code and a contact request that the recipient accepted ([decision 0014](../decisions/0014-first-contact-by-invite.md)).
+1. The sender's device holds the recipient device's address and identity KEM key. At first contact, it got them from an invite link or QR code and a contact request that the recipient accepted ([decision 0014](../decisions/0014-first-contact-by-invite.md)). The steps below run once for each approved device of the recipient, and once for each of the sender's own other devices ([decision 0016](../decisions/0016-user-identity-and-linked-devices.md)).
 2. The sender's device keeps the message in its local storage until it can reach the recipient's device ([open question 14](open-questions.md#14-retry-expiry-and-relaying-under-online-only-delivery)). The message is not encrypted in advance under an earlier session.
 3. When the devices can reach each other, they run a new handshake. Each side encapsulates secrets to the other's identity KEM key and to fresh ephemeral keys, and both derive the same session keys. Nothing is signed.
 4. The sender's device encrypts each message with a new key from the ratchet and sends it. No other party stores it.
