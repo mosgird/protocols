@@ -12,14 +12,22 @@
 
 ## AI use
 
-See [AI_POLICY.md](../AI_POLICY.md). Answer every line.
+See [AI_POLICY.md](../AI_POLICY.md). Answer every question. The boxes can be ticked by clicking them after the pull request is opened.
 
 - Tool used (or "none"):
-- Extent: [ ] none  [ ] brainstorming  [ ] drafted text  [ ] generated code  [ ] review only
-- AI-generated assets (art, icons, sound, music, fonts, video, 3D models, or any image or audio, including placeholders): [ ] none. Required; AI-generated assets are permanently prohibited.
-- Cryptographic or key-handling content touched? [ ] no  [ ] yes, human-written or line-by-line reviewed
-- I can explain and defend every line in this pull request: [ ] yes
-- If AI use is disclosed: every commit has `Co-authored-by` and `Task` trailers, and no session links appear in commits or here.
+- Extent (tick every one that applies):
+  - [ ] none
+  - [ ] brainstorming
+  - [ ] drafted text
+  - [ ] generated code
+  - [ ] review only
+- AI-generated assets (art, icons, sound, music, fonts, video, 3D models, or any image or audio, including placeholders). Required; AI-generated assets are permanently prohibited:
+  - [ ] none
+- Cryptographic or key-handling content touched?
+  - [ ] no
+  - [ ] yes, human-written or line-by-line reviewed
+- [ ] I can explain and defend every line in this pull request.
+- [ ] If AI use is disclosed: every commit has `Co-authored-by` and `Task` trailers, and no session links appear in commits or here.
 
 ## Specification sections affected
 
