@@ -140,7 +140,7 @@ Before [decision 0007](../decisions/0007-communities.md), this question used "se
 - **A. Encrypted blobs on the relay server.** The client encrypts the file, uploads it, and sends a key and a reference in the message. Not applicable after decision 0005: there is no relay server.
   - Cost: the server stores file ciphertext and sees file sizes. Storage and retention rules are needed.
 - **B. Peer-to-peer transfer.** Devices exchange the encrypted file directly over the transport, after a message reference is delivered.
-  - Cost: both devices must be online at the same time, as for messages. Large files take longer to deliver over anonymizing transports. Exposes network addresses to the other party unless the transport hides them.
+  - Cost: both devices must be online at the same time, as for messages. Large files take longer to deliver over Tor and I2P ([decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md)), which do not expose network addresses to the other party.
 
 **Open detail:** a size limit, and whether a group member who already has a file may pass it to another member.
 
@@ -183,7 +183,7 @@ The overview lists what contacts, group members, network observers, and transpor
 - **B. Padding and batching.** Messages are padded to fixed size classes, and sends are delayed or batched.
   - Cost: more bandwidth and latency. Timing padding has limited effect against an observer who sees all traffic. Batching delays delivery that is already limited to times when both devices are online.
 - **C. Network address hiding.** Devices reach each other through a transport that hides network addresses from peers and from observers, such as onion routing, garlic routing, or a mixnet.
-  - Cost: latency, battery use on phones, and dependence on relays run by others. The choice is made in [question 12](#12-transport-and-addressing).
+  - Cost: latency, battery use on phones, and dependence on relays run by others. Chosen in [decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md): Tor onion services and I2P. Neither resists an observer who sees the whole network; a mixnet would.
 - **D. Accept current exposure, documented.** Leave the gaps in place and state them clearly to users.
   - Cost: does not meet the minimal-metadata goal. Listed so that the choice is explicit.
 
@@ -202,6 +202,13 @@ These points are not clear from the initial brief. They are recorded here instea
 ---
 
 ## 12. Transport and addressing
+
+**Status:** closed by [decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md):
+- Over the internet, Tor onion services (option A) and I2P (option B), combined per option J.
+- Local links (option I) as a fallback when the internet is unavailable.
+- Every link is encrypted and authenticated.
+
+The open detail below is still open.
 
 **Question:** How does a device find and reach another device, without servers and without domain names?
 
@@ -232,9 +239,13 @@ Every option below carries ciphertext that is already end-to-end encrypted. The 
 
 **Open detail:**
 
-- Almost every option needs a way to join the network that someone else runs: directory authorities, reseed hosts, or bootstrap peers. Whether that fits [decision 0005](../decisions/0005-serverless-online-only-delivery.md) is undecided.
+- Joining a network needs infrastructure that someone else runs, such as directory authorities, reseed hosts, or bootstrap peers. Resolved by decision 0009: for Tor and I2P, this infrastructure belongs to the transport and does not store Mosgird messages.
 - How an address relates to the user identifier ([question 2](#2-identity-format)).
-- How mobile background limits affect reachability.
+- How mobile background limits affect reachability. This is now [question 17](#17-mobile-reachability-without-push-services).
+- Whether a device runs Tor and I2P at the same time, how it chooses one for each contact, and whether switching between them reveals anything.
+- How a device reaches Tor or I2P where they are blocked, for example through Tor bridges and pluggable transports.
+- Which authenticated key exchange local links use (for example a Noise Protocol Framework handshake), and how local discovery avoids stable identifiers.
+- Whether local links are also used while the internet is available.
 
 ---
 
@@ -251,7 +262,9 @@ Every option below carries ciphertext that is already end-to-end encrypted. The 
 - **C. Introduction by a mutual contact.** A contact who knows both users passes on one user's address and bundle to the other.
   - Cost: the introducer can substitute keys. Verification is needed to detect it.
 - **D. Publication in a distributed hash table.** A device publishes its address and bundle under a key-derived name.
-  - Cost: peers that store or answer the lookup learn who is looking for whom. It depends on the transport offering such a table (question 12).
+  - Cost: peers that store or answer the lookup learn who is looking for whom. Tor and I2P ([decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md)) look up an address that is already known. Neither is a public table for finding users who have not shared an address.
+- **E. Contact only with permission.** A device accepts nothing but a contact request from an unknown device. No messages are delivered until the recipient's user accepts the request. Alternatively, both users must each add the other, as Briar does for contacts added at a distance. The team suggested this. It combines with A to D.
+  - Cost: stops unsolicited messages before any conversation starts. The request itself is still delivered, so requests can be used for spam or harassment. Rate limits or proof-of-work against this are open. A request reveals the requester's address and identity key to the recipient before the recipient accepts. Mutual adding avoids that, but both users must act.
 
 **Open detail:** whether one-time pre-keys are still needed when a bundle is exchanged directly, and how a device replaces a bundle that has been used.
 
@@ -317,3 +330,28 @@ Any mechanism must follow a published design for decentralized access control. N
 - Whether moderation actions are logged, and who can read the log.
 - Resistance to one person creating many identities, since new identities cost nothing to create.
 - Appeals, and the transfer of a community when its owner leaves.
+
+---
+
+## 17. Mobile reachability without push services
+
+**Question:** How does a phone receive messages while the app is not in use, when push services are excluded ([decision 0008](../decisions/0008-no-push-services.md)) and delivery is online-only ([decision 0005](../decisions/0005-serverless-online-only-delivery.md))?
+
+Platform limits change between operating system versions. The costs below must be checked against current Android and Apple documentation before a decision is written.
+
+**Options (may be combined):**
+
+- **A. Reachable only while the app is open.** The client connects to the transport only in the foreground.
+  - Cost: the least battery use and the simplest option. Delivery to phones depends on both users having the app open at the same time. The only option certain to be available on iOS.
+- **B. A long-running background service.** On Android, a foreground service keeps the transport connected. Briar uses this approach.
+  - Cost: steady battery and data use, more so on an anonymizing transport. Android requires a persistent notification, which shows anyone who sees the screen that the app is running. Android limits which foreground service types an app may use and for how long. Not available on iOS.
+- **C. Periodic wake-ups scheduled by the operating system.** For example, Android WorkManager, whose shortest repeat interval is 15 minutes, or iOS background app refresh, which runs when the system chooses.
+  - Cost: a message arrives only if the sender retries during one of the recipient's short online periods, so delivery is slow and unreliable. Regular online periods can form a pattern that network observers or contacts can recognize. On iOS, the system decides when and whether the app runs.
+- **D. Delivery to the user's other device.** An always-on device of the user, such as a desktop, receives messages. The phone fetches them from that device when it connects ([question 14](#14-retry-expiry-and-relaying-under-online-only-delivery), option B).
+  - Cost: depends on multi-device handling ([question 3](#3-multi-device-key-handling)). It does not help users with only a phone. The other device is the user's own, not a server, but it must be online and reachable.
+
+**Open detail:**
+
+- Whether an iOS client is possible with any option other than A.
+- Battery and data cost of B on each candidate transport ([question 12](#12-transport-and-addressing)). This needs measurement, not estimates.
+- Whether the client's notification text, in option B, can avoid naming the app.
