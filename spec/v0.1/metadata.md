@@ -31,7 +31,8 @@ Which devices a user approves, holds, or distrusts is stored only on that user's
 
 - The membership of the group, which member sent each message, who added or removed whom, and when each member updates their keys. DCGKA does not hide this from members ([decision 0006](../decisions/0006-dcgka-for-groups.md)).
 - The size and timing of each message, and the onion addresses and I2P destinations of the members they talk to directly.
-- When other members were online, and which group control messages each member was missing, because members pass missing messages on to each other ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md)). Each member stores the group's control messages until every member has acknowledged them or they expire.
+- When other members were online, and which group messages each member was missing, because members pass missing messages on to each other ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md), [decision 0018](../decisions/0018-deniable-signatures-for-group-messages.md)). Each member stores the group's control and application messages until every member has acknowledged them or they expire.
+- Which short-lived signing key each member device uses in each epoch, and from the key lists, which pairs of member devices have met in each epoch ([decision 0018](../decisions/0018-deniable-signatures-for-group-messages.md)). A member can show other members who wrote an application message. Whether it can show an outsider depends on the deniability of decision 0012's sessions, which is **[open]** ([open question 18](open-questions.md#18-post-quantum-deniable-authentication)).
 - Community and channel structure: names, roles, membership, and moderation actions. Whether non-members can learn any of this is **[open]** ([open question 7](open-questions.md#7-community-and-channel-structure-visibility)).
 
 **Network observers and transport relays can observe:**
@@ -45,7 +46,7 @@ Which devices a user approves, holds, or distrusts is stored only on that user's
 **Someone holding a copy of a device's storage, without its key store or passphrase ([decision 0015](../decisions/0015-protection-of-stored-data.md)), can observe:**
 
 - The number and size of stored records, and when they changed. The content is encrypted.
-- That the device holds other members' group control messages, for up to the expiry time, and from the hashes it keeps, how many messages its groups had ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md)).
+- That the device holds other members' group control and application messages, for up to the expiry time, and from the hashes it keeps, how many messages its groups had ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md), [decision 0018](../decisions/0018-deniable-signatures-for-group-messages.md)).
 
 **No one other than the intended participants can observe:**
 
