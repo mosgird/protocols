@@ -1,0 +1,37 @@
+name: actions-lock
+
+# Every action the workflows use, including the actions those actions use,
+# is locked to a commit in .github/workflows/actions.lock, together with
+# the numeric identity of its repository. GitHub Actions runs the locked
+# commit and rejects a dependency that is not in the lockfile.
+#
+# This job fails when the lockfile is out of date with the workflows, or
+# when a locked commit no longer verifies upstream: a moved tag, a
+# rewritten history, or a repository whose identity changed. It never
+# writes. To update the lockfile, run `gh actions-lock` locally and review
+# the diff (docs/ in GitHub's gh-actions-lock repository explains each
+# error).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actions-lock:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      # GitHub's own extension (github/gh-actions-lock). gh pins a
+      # precompiled extension by release tag.
+      - run: gh extension install github/gh-actions-lock --pin v0.5.1
+      - run: gh actions-lock --verify --fail-on-warning

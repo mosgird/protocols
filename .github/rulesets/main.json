@@ -43,6 +43,9 @@
           },
           {
             "context": "contribution-policy"
+          },
+          {
+            "context": "actions-lock"
           }
         ]
       }

@@ -21,6 +21,7 @@ This repository holds the protocol specification. It contains no implementation 
 
 - **Fill in the pull request template completely**, including the security and privacy section. Do not delete sections; write "not applicable" with a reason.
 - **Session links are banned** in commit messages and pull request descriptions. Commit trailers (`Co-authored-by`, `Task`) and AI disclosure follow [AI_POLICY.md](AI_POLICY.md). The `contribution-policy` check runs on every pull request and is a required check in the branch rules, like `spec-consistency`.
+- **Actions are locked** in `.github/workflows/actions.lock`, GitHub's workflow lockfile. After changing a `uses:` line, regenerate it with `gh actions-lock` and review the diff; never edit it by hand. The `actions-lock` check fails when the lockfile is stale or a locked commit no longer verifies upstream. A changed `owner_id` or `repo_id` in the lockfile means the repository behind a name changed: stop and ask the owner.
 
 ## Contributors and commit signing
 
