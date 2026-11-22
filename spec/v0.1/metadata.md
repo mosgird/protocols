@@ -9,6 +9,7 @@ There is no server. What others can observe depends on who they are and on the t
 - The other device's onion address and I2P destination, and that both belong to the same device. Over Tor and I2P, it does not learn the other device's network address. Over a local link, it learns the local link address.
 - When the other device is online and reachable.
 - The size and timing of each message, and how often the sender retries.
+- The one-time prekeys the other device gives it for two-party messages in groups ([decision 0019](../decisions/0019-two-party-component-for-dcgka.md)), and when it uses up the ones it gave.
 - The other device's identity KEM key, and the ephemeral keys and encapsulations of each handshake ([decision 0012](../decisions/0012-mosgird-session-protocol.md)). These are what the contact needs to derive the session keys. Nothing in them is signed, so they prove nothing to a third party.
 - When each connection starts, because every connection runs a new handshake.
 
@@ -17,6 +18,7 @@ There is no server. What others can observe depends on who they are and on the t
 - The user key, and every device of the user: how many there are, their public keys and addresses, and that they belong to one person.
 - When the user links or removes a device, from the list's version and content.
 - That the list is signed by the user key and agreed to by each device. These signatures can be shown to a third party, so who owns which devices is not deniable. Messages stay deniable.
+- Each device's signed prekey, and when the device replaces it, which shows roughly when the device was online ([decision 0019](../decisions/0019-two-party-component-for-dcgka.md)). The prekey is signed under the device's key, so it shows a third party that the device published it.
 - Members of a group observe the same about the devices that are members of that group.
 
 Which devices a user approves, holds, or distrusts is stored only on that user's devices and is never sent.

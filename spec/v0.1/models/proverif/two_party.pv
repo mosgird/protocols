@@ -1,0 +1,106 @@
+(* Mosgird two-party component of DCGKA (2SM, decision 0019).
+   DRAFT drafted by an AI tool. Not a proof until a human with
+   ProVerif experience has reviewed every line (decision 0013).
+
+   The 2SM protocol the DCGKA authors use (Jost, Maurer, Mularczyk,
+   EUROCRYPT 2019, section 2.2; DCGKA reference implementation,
+   TwoPartyProtocol.java). Every message carries, encrypted:
+   - the payload (a DCGKA seed secret);
+   - the secret key of a new key pair, which the receiver uses to
+     decrypt the sender's next messages until it replies;
+   - the public key of another new key pair, which the receiver
+     encrypts its replies to.
+   The first message is encrypted to a one-time prekey of the
+   receiver. Public-key encryption is X-Wing followed by an AEAD
+   (KEM-DEM), both ideal as in common.pvl.
+
+   One bounded run between honest devices A and B:
+     m1  A -> B  under B's one-time prekey
+     m2  A -> B  a second message before B replies
+     m3  B -> A  B's reply
+     m4  A -> B  A's answer
+   Delivery is authentic and in order, as DCGKA's authenticated
+   causal broadcast provides and the 2SM game of the DCGKA paper
+   (appendix B) assumes: each ciphertext is signed under its
+   sender's broadcast key, with its position. The broadcast keys
+   never leak (the paper gives no post-impersonation security).
+
+   In phase 1 every secret key A and B still hold is revealed:
+   forward secrecy of all four payloads. The one-time prekey was
+   deleted on use and is not revealed. *)
+
+type sskey.
+type spkey.
+
+fun spk(sskey): spkey.
+fun sign(sskey, bitstring): bitstring.
+reduc forall k: sskey, m: bitstring;
+  verify(spk(k), m, sign(k, m)) = m.
+
+fun sk2b(skey): bitstring [data, typeConverter].
+
+letfun pke_enc(p: pkey, m: bitstring, r: coins) =
+  (kem_ct(p, r), aead_enc(kem_ss(p, r), empty, m)).
+
+free acbA, acbB: sskey [private].
+free s1, s2, s3, s4: bitstring [private].
+const t1, t2, t3, t4: bitstring.
+
+event BDone(bitstring).
+
+query attacker(s1).
+query attacker(s2).
+query attacker(s3).
+query attacker(s4).
+query x: bitstring; event(BDone(x)).
+
+let A(pkP: pkey) =
+  (* m1, to the prekey *)
+  new skA1: skey; new skO1: skey; new r1: coins;
+  let ct1 = pke_enc(pkP, (s1, sk2b(skO1), pk2b(pk(skA1))), r1) in
+  out(c, (ct1, sign(acbA, (t1, ct1))));
+  (* m2, to the key whose secret part went to B in m1 *)
+  new skA2: skey; new skO2: skey; new r2: coins;
+  let ct2 = pke_enc(pk(skO1), (s2, sk2b(skO2), pk2b(pk(skA2))), r2) in
+  out(c, (ct2, sign(acbA, (t2, ct2))));
+  (* m3, under A's newest key; skA1 and skA2 are deleted *)
+  in(c, (ct3: bitstring, g3: bitstring));
+  let (=t3, =ct3) = verify(spk(acbB), (t3, ct3), g3) in
+  let (k3: bitstring, b3: bitstring) = ct3 in
+  let (x3: bitstring, sk2b(skO3: skey), pk2b(pkB1: pkey))
+    = aead_dec(decap(skA2, k3), empty, b3) in
+  (* m4, to the key B sent in m3 *)
+  new skA3: skey; new skO4: skey; new r4: coins;
+  let ct4 = pke_enc(pkB1, (s4, sk2b(skO4), pk2b(pk(skA3))), r4) in
+  out(c, (ct4, sign(acbA, (t4, ct4))));
+  (* A now holds skA3 (own key) and skO3 (received key) *)
+  phase 1; out(c, (skA3, skO3)).
+
+let B(skP: skey) =
+  in(c, (ct1: bitstring, g1: bitstring));
+  let (=t1, =ct1) = verify(spk(acbA), (t1, ct1), g1) in
+  let (k1: bitstring, b1: bitstring) = ct1 in
+  let (x1: bitstring, sk2b(skO1: skey), pk2b(pkA1: pkey))
+    = aead_dec(decap(skP, k1), empty, b1) in
+  in(c, (ct2: bitstring, g2: bitstring));
+  let (=t2, =ct2) = verify(spk(acbA), (t2, ct2), g2) in
+  let (k2: bitstring, b2: bitstring) = ct2 in
+  let (x2: bitstring, sk2b(skO2: skey), pk2b(pkA2: pkey))
+    = aead_dec(decap(skO1, k2), empty, b2) in
+  new skB1: skey; new skO3: skey; new r3: coins;
+  let ct3 = pke_enc(pkA2, (s3, sk2b(skO3), pk2b(pk(skB1))), r3) in
+  out(c, (ct3, sign(acbB, (t3, ct3))));
+  in(c, (ct4: bitstring, g4: bitstring));
+  let (=t4, =ct4) = verify(spk(acbA), (t4, ct4), g4) in
+  let (k4: bitstring, b4: bitstring) = ct4 in
+  let (x4: bitstring, sk2b(skO4: skey), pk2b(pkA3: pkey))
+    = aead_dec(decap(skB1, k4), empty, b4) in
+  event BDone(x4);
+  (* skB1 is deleted on use; B now holds skO4 (received key) *)
+  phase 1; out(c, skO4).
+
+process
+  out(c, (spk(acbA), spk(acbB)));
+  new skP: skey;
+  out(c, pk(skP));
+  ( A(pk(skP)) | B(skP) )

@@ -334,6 +334,8 @@ Still open:
 
 ## 15. Two-party component for DCGKA
 
+**Status:** closed by [decision 0019](../decisions/0019-two-party-component-for-dcgka.md): option A, with X-Wing encryption, one-time prekeys handed out in sessions, and a signed prekey on each device as a fallback. The open detail below is still open.
+
 **Question:** Which two-party secure messaging (2SM) protocol does DCGKA use to send secrets to one member?
 
 DCGKA sends some secrets to a single member in a direct message, encrypted with a 2SM protocol (paper section 5.3). The paper states that the Signal protocol "does not suffice for our purposes because it heals from a compromise only after several rounds of communication, not with each message sent". It uses a protocol with optimal forward secrecy and post-compromise security from D. Jost, U. Maurer, M. Mularczyk, "Efficient Ratcheting: Almost-Optimal Guarantees for Secure Messaging", EUROCRYPT 2019 (full version: IACR ePrint 2018/954).
@@ -347,7 +349,14 @@ DCGKA sends some secrets to a single member in a direct message, encrypted with 
 - **C. The paper's protocol for direct messages too.** Replace the ratchet of decision 0012 with the same 2SM protocol, or treat a direct message as a two-member group.
   - Cost: supersedes part of decision 0012. One two-party protocol to implement.
 
-**Open detail:** the paper requires that 2SM map identities to public keys through a public key infrastructure that includes ephemeral prekeys. Under decision 0005 those prekeys come from first contact ([question 13](#13-first-contact-without-a-directory)). Decision 0012 has no prekeys, so option A would bring them back for groups only. Whether the 2SM protocol of Jost, Maurer, and Mularczyk can be instantiated with post-quantum primitives at the level of [decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md) must be checked against the paper.
+**Open detail:**
+
+- **The exact public-key encryption.** Decision 0019 uses X-Wing followed by XChaCha20-Poly1305.
+  - Option: HPKE (RFC 9180) with X-Wing, as the X-Wing draft intends. Cost: HPKE derives keys with HKDF, a hash outside [decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md)'s suite, and its standard AEADs do not include XChaCha20-Poly1305.
+  - Option: the same KEM-then-AEAD structure, with the key derived by keyed BLAKE2b. Cost: no standard defines this combination, so every input must be specified and reviewed, as decision 0011 requires for each BLAKE2b use.
+- **The extended paper.** Decision 0019 must be checked against the formal description in IACR ePrint 2020/1281 before it leaves Proposed.
+- **How many one-time prekeys** a device gives each other device, and when it gives more. More prekeys mean fewer first messages under the signed prekey, but more keys to store and to send in each session.
+- **A message whose prekey was deleted.** Recovery belongs with the catch-up after expiry of [question 14](#14-retry-expiry-and-relaying-under-online-only-delivery).
 
 ---
 

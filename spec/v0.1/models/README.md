@@ -8,6 +8,7 @@
 | [proverif/handshake_xxpsk0.pv](proverif/handshake_xxpsk0.pv) | ProVerif 2.05 | First contact: the Post-Quantum Noise form of `XXpsk0` with the invite secret, followed by the contact request ([decision 0014](../../decisions/0014-first-contact-by-invite.md)). |
 | [tamarin/ratchet.spthy](tamarin/ratchet.spthy) | Tamarin 1.12.0 | The ratchet inside a connection, with KEM-based key agreement (decision 0012). |
 | [proverif/group_relay.pv](proverif/group_relay.pv) | ProVerif 2.05 | Group messages passed on by other members ([decision 0017](../../decisions/0017-retry-expiry-and-relaying.md)): a relayed message is accepted only as its sender signed it. Also application messages signed under short-lived keys ([decision 0018](../../decisions/0018-deniable-signatures-for-group-messages.md)). |
+| [proverif/two_party.pv](proverif/two_party.pv) | ProVerif 2.05 | DCGKA's two-party component ([decision 0019](../../decisions/0019-two-party-component-for-dcgka.md)): one bounded exchange that starts under a one-time prekey. |
 
 Shared ProVerif declarations are in [proverif/common.pvl](proverif/common.pvl).
 
@@ -23,7 +24,9 @@ Shared ProVerif declarations are in [proverif/common.pvl](proverif/common.pvl).
 
 For group relaying (`group_relay.pv`): a message accepted as from an honest member was sent by that member with the same group, predecessor hashes and content, whichever member relayed it. The identifier is part of the signed content. The sanity query shows that a relayed message is accepted. The same holds for application messages signed under a short-lived key, when a device accepts that key only through the sender's session, modelled as a private channel. Secrecy is not checked, because group keys come from DCGKA, which has no model yet.
 
-The sanity checks show that the models are not vacuous. A model in which no session completes would prove every property trivially. They were also checked once by hand with a negative control: removing the ephemeral encapsulation from `KK` makes ProVerif find the forward-secrecy attack. In `group_relay.pv`, removing the signature check makes ProVerif find forgeries for both authenticity queries, and letting a device take a short-lived key from the public channel instead of the sender's session makes ProVerif find forgeries of application messages for both members.
+For the two-party component (`two_party.pv`): device A sends two messages, device B replies, and A answers. Delivery is authentic and in order, as DCGKA's authenticated causal broadcast provides. All four payloads stay secret, also after every key both devices still hold is revealed (forward secrecy). The sanity query shows that B receives the last message.
+
+The sanity checks show that the models are not vacuous. A model in which no session completes would prove every property trivially. They were also checked once by hand with a negative control: removing the ephemeral encapsulation from `KK` makes ProVerif find the forward-secrecy attack. In `group_relay.pv`, removing the signature check makes ProVerif find forgeries for both authenticity queries, and letting a device take a short-lived key from the public channel instead of the sender's session makes ProVerif find forgeries of application messages for both members. In `two_party.pv`, revealing B's prekey afterwards, as when a signed prekey leaks before it is deleted, makes ProVerif find both messages A sent before B's reply, and only those.
 
 ## Running the models
 
@@ -54,4 +57,5 @@ These are open for the expert review.
   - messages that arrive out of order, and their skipped keys;
   - more than two honest devices;
   - for group relaying: DCGKA itself, the new signing key a member gets on every key update (one fixed key per member is modelled, so a leaked old key is not covered), reconciliation (that every member eventually gets every message), expiry, and detection of a sender that signs two messages that fork. The hybrid signature is one ideal signature. For short-lived keys (decision 0018): the decision 0012 session is an ideal private channel between honest members, so the authenticity result follows closely from that assumption; no dishonest member and no leaked key are modelled; a key is not tied to a group or epoch; the proof-of-possession and key-list steps of mpOTR are not modelled; and deniability, including that no long-term signature covers an application message, is not checked.
+- **The two-party component** is one bounded run between two honest devices. Recovery after compromise, messages sent by both sides at once, the signed prekey's lifetime, and DCGKA around it are not modelled. Public-key encryption is an ideal X-Wing followed by an ideal AEAD.
 - **First contact assumes the link arrives unchanged.** A link that the attacker reads first lets it make a request in the invited user's place. Decision 0014 states this, and the model doesn't contradict it, because the attacker's own invites are modelled separately.

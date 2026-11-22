@@ -49,7 +49,7 @@ This closes [open question 18](../v0.1/open-questions.md#18-post-quantum-deniabl
   - Each ratchet step adds about 2.3 KB to the first message after a change of direction.
   - Long one-way bursts add nothing beyond the symmetric chain.
   - Battery and data cost is to be measured later.
-- **Groups.** Whether this protocol can serve as DCGKA's two-party component is part of [open question 15](../v0.1/open-questions.md#15-two-party-component-for-dcgka). The paper requires specific properties of that component, and they must be checked against this design.
+- **Groups.** This protocol does not serve as DCGKA's two-party component. Its sessions need both devices online, and DCGKA's two-party messages are relayed to devices that may be offline. [Decision 0019](0019-two-party-component-for-dcgka.md) chooses that component. The sessions do carry the one-time prekeys it uses.
 - **Identity.** The identity KEM key and the signature keys are separate key pairs. How they are bound to one user identifier is part of [open question 2](../v0.1/open-questions.md#2-identity-format).
 - **Signal's protocol is no longer referenced** for direct messages. Its ideas remain in the cited papers, which analyze the double ratchet in general form.
 
