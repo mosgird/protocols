@@ -69,6 +69,10 @@ There is no server. What others can observe depends on who they are and on the t
 - Lookups of an onion service descriptor or an I2P lease set, by the directory relays or routers that serve them. The details are set by each network.
 - Near a device that uses local links: that it broadcasts or connects, and when. Discovery must not reveal stable identifiers to non-contacts. How is open.
 
+**Someone holding a copy of a device's storage, without its key store or passphrase ([decision 0015](../decisions/0015-protection-of-stored-data.md)), can observe:**
+
+- The number and size of stored records, and when they changed. The content is encrypted.
+
 **No one other than the intended participants can observe:**
 
 - Plaintext message content.

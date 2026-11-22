@@ -15,7 +15,7 @@ The protocol so far uses only classical primitives: X25519 and Ed25519, about 12
 
 ## Decision
 
-The protocol uses these primitives and no others, unless a later decision record adds them. The library column is the fallback. [Decision 0013](0013-formal-verification.md) prefers a formally verified implementation where one exists.
+The protocol uses these primitives and no others, unless a later decision record adds them. The library column is the fallback. [Decision 0013](0013-formal-verification.md) prefers a formally verified implementation where one exists. [Decision 0015](0015-protection-of-stored-data.md) adds Argon2id, only to derive a key from an optional app passphrase.
 
 | Purpose | Primitive | Strength | Library |
 |---|---|---|---|

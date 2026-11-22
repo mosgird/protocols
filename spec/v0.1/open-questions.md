@@ -399,6 +399,8 @@ Delivery is online-only ([decision 0005](../decisions/0005-serverless-online-onl
 
 ## 19. Protection of data stored on the device
 
+**Status:** closed by [decision 0015](../decisions/0015-protection-of-stored-data.md): encryption under a key held by the operating system's key store, always on (option A), and an optional passphrase (option B). There are no backups for now. Disappearing messages (option C) and the open detail below are still open.
+
 **Question:** How does a device protect what it stores: identity keys, contacts, message history, and messages waiting for delivery?
 
 Forward secrecy ([decision 0012](../decisions/0012-mosgird-session-protocol.md)) protects traffic, not stored data. Someone with access to an unlocked device, or to a copy of its storage, can read everything the device keeps unless the storage itself is protected. Messages waiting for delivery are kept in plaintext form until the next connection, so they depend on this protection too.
@@ -417,5 +419,7 @@ Forward secrecy ([decision 0012](../decisions/0012-mosgird-session-protocol.md))
 **Open detail:**
 
 - How long undelivered messages are kept ([question 14](#14-retry-expiry-and-relaying-under-online-only-delivery)).
-- Whether backups exist, and how they are encrypted ([question 5](#5-message-history-sync)).
-- Whether all of this is the same on every platform, which the core library ([decision 0010](../decisions/0010-shared-core-library.md)) makes possible.
+- Whether backups exist, and how they are encrypted ([question 5](#5-message-history-sync)). Resolved for v0.1 by decision 0015: no backups.
+- Whether all of this is the same on every platform, which the core library ([decision 0010](../decisions/0010-shared-core-library.md)) makes possible. Resolved by decision 0015: the core library encrypts records itself everywhere, and only the key store differs.
+- Whether stored records are padded, so that a copy of the storage does not reveal how much a user talks.
+- Disappearing messages: whether they are added, their default, and how the other device is asked to honour them.
