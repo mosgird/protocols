@@ -1,0 +1,72 @@
+(* Mosgird group relaying: authenticity of relayed group messages
+   (decision 0017, points 5 and 7; decision 0006).
+   DRAFT drafted by an AI tool. Not a proof until a human with
+   ProVerif experience has reviewed every line (decision 0013).
+
+   Every group control message carries the group, its identifier,
+   the hashes of its causal predecessors, and its content, signed by
+   its sender. Members pass messages on to each other. The attacker
+   plays every relaying member and carries all messages; it can also
+   make signing keys of its own. Honest members A and B send any
+   number of messages with a group, identifier, predecessors and
+   content the attacker chooses, and a receiving device accepts a
+   message from any member.
+
+   One signing key per member: DCGKA's new signing key on every key
+   update (decision 0006) is not modelled. The identifier is part of
+   the content term m below.
+
+   Abstractions:
+   - The hybrid Ed25519 and ML-DSA-87 signature (decision 0011) is
+     one ideal signature. How the two parts are bound is open
+     (open question 18).
+   - Group encryption comes from DCGKA, which has no model yet, so
+     secrecy is not checked here. Reconciliation, expiry, and
+     equivocation detection are not modelled. *)
+
+type sskey.
+type spkey.
+
+fun spk(sskey): spkey.
+fun sign(sskey, bitstring): bitstring.
+reduc forall k: sskey, m: bitstring;
+  verify(spk(k), m, sign(k, m)) = m.
+
+free skA, skB: sskey [private].
+
+event Sent(spkey, bitstring, bitstring, bitstring).
+event Accepted(spkey, bitstring, bitstring, bitstring).
+
+(* A message accepted as from A or B was sent by them, with the same
+   group, predecessor hashes and content, whoever relayed it. *)
+query g: bitstring, p: bitstring, m: bitstring;
+  event(Accepted(spk(skA), g, p, m)) ==> event(Sent(spk(skA), g, p, m)).
+query g: bitstring, p: bitstring, m: bitstring;
+  event(Accepted(spk(skB), g, p, m)) ==> event(Sent(spk(skB), g, p, m)).
+
+(* Sanity: a relayed message from A is accepted. ProVerif must report
+   this as false (the event is reachable); otherwise the model is
+   vacuous. *)
+query g: bitstring, p: bitstring, m: bitstring;
+  event(Accepted(spk(skA), g, p, m)).
+
+(* An honest member sends: the attacker picks the group, the
+   predecessor hashes and the content. *)
+let Sender(sk: sskey) =
+  in(c, (g: bitstring, p: bitstring, m: bitstring));
+  event Sent(spk(sk), g, p, m);
+  out(c, (g, p, m, sign(sk, (g, p, m)))).
+
+(* A receiving device: the message arrives from whichever member
+   relayed it, claiming a sender key. It accepts only if the sender's
+   signature verifies over the group, the predecessor hashes and the
+   content. Without this check ProVerif finds forgeries for both
+   authenticity queries (negative control, see README.md). *)
+let Receiver =
+  in(c, (pkS: spkey, g: bitstring, p: bitstring, m: bitstring, s: bitstring));
+  let (=g, =p, =m) = verify(pkS, (g, p, m), s) in
+  event Accepted(pkS, g, p, m).
+
+process
+  out(c, (spk(skA), spk(skB)));
+  ( (!Sender(skA)) | (!Sender(skB)) | (!Receiver) )
