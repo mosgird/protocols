@@ -58,11 +58,22 @@ def commits(base: str, head: str) -> list[tuple[str, str]]:
 
 
 def trailers(message: str) -> dict[str, list[str]]:
+    """Parse the trailer block: the last paragraph of the message.
+
+    Lines such as "Task: ..." in the body do not count. The last paragraph is
+    the trailer block only if every non-empty line in it is a "Key: value"
+    line, as in git's trailer format. A subject-only message has none.
+    """
+    paragraphs = [p for p in re.split(r"\n\s*\n", message.strip()) if p.strip()]
+    if len(paragraphs) < 2:
+        return {}
+    lines = [line for line in paragraphs[-1].splitlines() if line.strip()]
+    matches = [re.match(r"^([A-Za-z][A-Za-z0-9-]*):\s*(.+)$", line) for line in lines]
+    if not all(matches):
+        return {}
     found: dict[str, list[str]] = {}
-    for line in message.splitlines():
-        match = re.match(r"^([A-Za-z-]+):\s*(.+)$", line)
-        if match:
-            found.setdefault(match.group(1).lower(), []).append(match.group(2).strip())
+    for match in matches:
+        found.setdefault(match.group(1).lower(), []).append(match.group(2).strip())
     return found
 
 
