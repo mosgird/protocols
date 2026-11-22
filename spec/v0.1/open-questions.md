@@ -287,7 +287,7 @@ Since [decision 0012](../decisions/0012-mosgird-session-protocol.md), there are 
 
 **Open detail:**
 
-- One-time pre-keys: resolved by decision 0012. Each connection runs an interactive handshake with fresh ephemeral keys, so no pre-keys exist.
+- One-time pre-keys: resolved by decision 0012. Each connection runs an interactive handshake with fresh ephemeral keys, so no pre-keys exist for direct messages. [Decision 0019](../decisions/0019-two-party-component-for-dcgka.md) adds prekeys only for DCGKA's two-party component.
 - What a contact link or QR code carries. Resolved by decision 0014: addresses, a fingerprint of the identity keys, and a one-time invite secret.
 - A public, reusable link for users who want to be reachable by people they have not invited. Decision 0014 does not support one. If one is added, requests from it need limits against spam, such as rate limits or proof of work, and each option costs reachability or battery.
 - Whether the Post-Quantum Noise paper's results cover the `psk` modifier that decision 0014 uses.
@@ -334,6 +334,8 @@ Still open:
 
 ## 15. Two-party component for DCGKA
 
+**Status:** closed by [decision 0019](../decisions/0019-two-party-component-for-dcgka.md): option A, with X-Wing encryption, one-time prekeys handed out in sessions, and a signed prekey on each device as a fallback. The open detail below is still open.
+
 **Question:** Which two-party secure messaging (2SM) protocol does DCGKA use to send secrets to one member?
 
 DCGKA sends some secrets to a single member in a direct message, encrypted with a 2SM protocol (paper section 5.3). The paper states that the Signal protocol "does not suffice for our purposes because it heals from a compromise only after several rounds of communication, not with each message sent". It uses a protocol with optimal forward secrecy and post-compromise security from D. Jost, U. Maurer, M. Mularczyk, "Efficient Ratcheting: Almost-Optimal Guarantees for Secure Messaging", EUROCRYPT 2019 (full version: IACR ePrint 2018/954).
@@ -347,7 +349,29 @@ DCGKA sends some secrets to a single member in a direct message, encrypted with 
 - **C. The paper's protocol for direct messages too.** Replace the ratchet of decision 0012 with the same 2SM protocol, or treat a direct message as a two-member group.
   - Cost: supersedes part of decision 0012. One two-party protocol to implement.
 
-**Open detail:** the paper requires that 2SM map identities to public keys through a public key infrastructure that includes ephemeral prekeys. Under decision 0005 those prekeys come from first contact ([question 13](#13-first-contact-without-a-directory)). Decision 0012 has no prekeys, so option A would bring them back for groups only. Whether the 2SM protocol of Jost, Maurer, and Mularczyk can be instantiated with post-quantum primitives at the level of [decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md) must be checked against the paper.
+**Open detail:**
+
+- **The exact public-key encryption.** Decision 0019 uses X-Wing followed by XChaCha20-Poly1305.
+  - Option: HPKE (RFC 9180) with X-Wing, as the X-Wing draft intends. Cost: HPKE derives keys with HKDF, a hash outside [decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md)'s suite, and its standard AEADs do not include XChaCha20-Poly1305.
+  - Option: the same KEM-then-AEAD structure, with the key derived by keyed BLAKE2b. Cost: no standard defines this combination, so every input must be specified and reviewed, as decision 0011 requires for each BLAKE2b use.
+- **The first message.** The authors derive its key with X3DH, which needs Diffie–Hellman identity keys (decision 0019, point 6).
+  - Option: encapsulate to one prekey, as decision 0019 does for now. Cost: a leaked one-time prekey alone exposes the message, and the paper's analysis does not cover the change.
+  - Option: PQXDH (Signal's specification), which combines X3DH with a post-quantum KEM prekey. Cost: devices would need X25519 identity keys beside their X-Wing keys, and its parameters must be checked against decision 0011.
+  - Option: encapsulate to both the signed and the one-time prekey and derive one key from both secrets, as PQXDH and X3DH use both prekeys. Cost: about 1.1 KB more per first message, and the exact combination needs a published source.
+- **Forward secrecy of the signed prekey.** The signed prekey's private part lives up to 97 days, so a first message under it does not meet the forward secrecy of the DCGKA paper's 2SM game (decision 0019, Consequences).
+  - Option: shorter rotation and retention. Cost: more two-party messages arrive after their prekey is gone, which breaks that pair's 2SM state.
+  - Option: combine it with a one-time prekey whenever one exists (the option above). Cost: no help when no one-time prekey exists.
+  - Option: no fallback. Cost: key updates stall for members who never meet in a session.
+- **Held and distrusted devices** (decision 0019, point 7).
+  - Option: send seed secrets to every member device. Cost: a device the user holds or distrusts can read that user's group messages, which goes further than [decision 0016](../decisions/0016-user-identity-and-linked-devices.md).
+  - Option: leave them out. Cost: changes DCGKA, which needs a new record and new analysis. The left-out device's view of the sender's ratchet diverges.
+- **Restarting a broken 2SM state.** A two-party message that cannot be read breaks that pair's state for that group, and DCGKA has no step to restart it.
+  - Option: the recipient removes and re-adds itself, or asks a member to. Cost: a membership change for the whole group.
+  - Option: a new 2SM state from a fresh prekey, announced in a control message. Cost: a change to DCGKA, which needs a new record and analysis.
+  - This belongs with the catch-up after expiry of [question 14](#14-retry-expiry-and-relaying-under-online-only-delivery).
+- **Cleartext fields of two-party messages.** The authors' format shows key indexes and which prekey a first message used, to every member. Encrypting or padding them costs bytes and a change to the authors' format.
+- **The extended paper.** Decision 0019 must be checked against the formal description in IACR ePrint 2020/1281 before it leaves Proposed.
+- **How many one-time prekeys** a device gives each other device, and when it gives more. Each first message in each group uses one. More prekeys mean fewer first messages under the signed prekey, but more keys to store and to send in each session.
 
 ---
 

@@ -9,6 +9,7 @@ There is no server. What others can observe depends on who they are and on the t
 - The other device's onion address and I2P destination, and that both belong to the same device. Over Tor and I2P, it does not learn the other device's network address. Over a local link, it learns the local link address.
 - When the other device is online and reachable.
 - The size and timing of each message, and how often the sender retries.
+- The one-time prekeys the other device gives it for two-party messages in groups ([decision 0019](../decisions/0019-two-party-component-for-dcgka.md)). The device that gave the prekeys learns when the other device uses each one.
 - The other device's identity KEM key, and the ephemeral keys and encapsulations of each handshake ([decision 0012](../decisions/0012-mosgird-session-protocol.md)). These are what the contact needs to derive the session keys. Nothing in them is signed, so they prove nothing to a third party.
 - When each connection starts, because every connection runs a new handshake.
 
@@ -17,6 +18,7 @@ There is no server. What others can observe depends on who they are and on the t
 - The user key, and every device of the user: how many there are, their public keys and addresses, and that they belong to one person.
 - When the user links or removes a device, from the list's version and content.
 - That the list is signed by the user key and agreed to by each device. These signatures can be shown to a third party, so who owns which devices is not deniable. Messages stay deniable.
+- Each device's signed prekey, and when the device replaces it, which shows roughly when the device was online ([decision 0019](../decisions/0019-two-party-component-for-dcgka.md)). The prekey is signed under the device's key, so it shows a third party that the device published it.
 - Members of a group observe the same about the devices that are members of that group.
 
 Which devices a user approves, holds, or distrusts is stored only on that user's devices and is never sent.
@@ -33,6 +35,7 @@ Which devices a user approves, holds, or distrusts is stored only on that user's
 - The size and timing of each message, and the onion addresses and I2P destinations of the members they talk to directly.
 - When other members were online, and which group messages each member was missing, because members pass missing messages on to each other ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md), [decision 0018](../decisions/0018-deniable-signatures-for-group-messages.md)). Each member stores the group's control and application messages until every member has acknowledged them or they expire.
 - Which short-lived signing key each member device uses in each epoch, and from the key lists, which pairs of member devices have met in each epoch ([decision 0018](../decisions/0018-deniable-signatures-for-group-messages.md)). A member can show other members who wrote an application message. Whether it can show an outsider depends on the deniability of decision 0012's sessions, which is **[open]** ([open question 18](open-questions.md#18-post-quantum-deniable-authentication)).
+- For each two-party message inside a control message ([decision 0019](../decisions/0019-two-party-component-for-dcgka.md)): its sender and recipient device, its size, whether a first message used a one-time or a signed prekey (which shows whether that pair of devices had met in a session), and from the cleartext key indexes, how many messages each pair exchanged and in which direction. Whether to encrypt or pad these fields is **[open]**. Anyone who later reads a member's device sees the same.
 - Community and channel structure: names, roles, membership, and moderation actions. Whether non-members can learn any of this is **[open]** ([open question 7](open-questions.md#7-community-and-channel-structure-visibility)).
 
 **Network observers and transport relays can observe:**
