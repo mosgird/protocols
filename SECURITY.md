@@ -1,6 +1,6 @@
 # Security policy
 
-This repository holds the Mosgird protocol specification. A flaw in the design is a security problem even when no code exists yet. The most serious reports are design flaws that let someone read message content, forge identities or keys, bypass end-to-end encryption, or learn metadata the specification says is hidden (see [overview section 3.3](spec/v0.1/overview.md#33-what-other-parties-can-observe)). Under [decision 0005](spec/decisions/0005-serverless-online-only-delivery.md) there is no server, so this includes anything a contact, a group member, a network observer, or a transport relay can learn beyond what section 3.3 lists.
+This repository holds the Mosgird protocol specification. A flaw in the design is a security problem even when no code exists yet. The most serious reports are design flaws that let someone read message content, forge identities or keys, bypass end-to-end encryption, or learn metadata the specification says is hidden (see [the list of what other parties can observe](spec/v0.1/metadata.md)). Under [decision 0005](spec/decisions/0005-serverless-online-only-delivery.md) there is no server, so this includes anything a contact, a group member, a network observer, or a transport relay can learn beyond what that list contains.
 
 ## Reporting a vulnerability
 

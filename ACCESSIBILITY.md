@@ -5,7 +5,7 @@ This repository is a specification written as Markdown. Its accessibility goals 
 ## The documents
 
 - Headings are used in order and say what the section contains.
-- Link text makes sense on its own. "See overview section 3.3" is preferred to "click here".
+- Link text makes sense on its own. "See the list of what other parties can observe" is preferred to "click here".
 - Tables have header rows.
 - Meaning is never carried by color or by layout alone.
 - The text is plain Markdown that works with screen readers, zoom, and text-to-speech.
@@ -14,7 +14,7 @@ This repository is a specification written as Markdown. Its accessibility goals 
 
 ## Plain language
 
-Sentences are short. Terms are defined once, in [overview section 4](spec/v0.1/overview.md#4-terminology), and used with the same meaning everywhere.
+Sentences are short. Terms are defined once, in [terminology.md](spec/v0.1/terminology.md), and used with the same meaning everywhere.
 
 ## For implementers
 

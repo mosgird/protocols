@@ -189,7 +189,7 @@ DCGKA needs a signature scheme for authenticated causal broadcast, a key derivat
 
 **Question:** Which metadata visible to parties other than the intended participants can be reduced in v0.1, and how?
 
-The overview lists what contacts, group members, network observers, and transport relays can observe (see [overview section 3.3](overview.md#33-what-other-parties-can-observe)). The project requires that this be minimized. The mechanisms below are not yet chosen and are not specified.
+[metadata.md](metadata.md) lists what contacts, group members, network observers, and transport relays can observe. The project requires that this be minimized. The mechanisms below are not yet chosen and are not specified.
 
 **Options (may be combined):**
 
