@@ -19,3 +19,8 @@ jobs:
 
       - name: Check specification consistency
         run: python3 scripts/check_spec.py
+
+      # The implementation repositories run check_test_ratio.py from a
+      # pinned commit of this repository; its tests run here.
+      - name: Test the scripts
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'

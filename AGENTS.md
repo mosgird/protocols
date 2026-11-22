@@ -42,6 +42,17 @@ Security and privacy are the primary constraint of this project. No component, f
 - Do not invent cryptographic constructions. Reference the published designs: Post-Quantum Noise (Angel et al., CCS 2022), the generic double ratchet (Alwen, Coretti, Dodis, EUROCRYPT 2019), X-Wing, DCGKA (Weidner, Kleppmann, Hugenroth, Beresford, CCS 2021) and the two-party protocol it builds on, and the primitives of decision 0011 from libsodium and libcrux.
 - Do not weaken a stated requirement to make another goal easier. Record the conflict as an open question instead.
 
+## Test-driven development
+
+This rule applies to `mosgird/core`, `mosgird/desktop`, `mosgird/android`, and every implementation repository created later. Each of them repeats it in its own AGENTS.md.
+
+- Work test first. Write a test for the behavior, run it and watch it fail, write the least code that makes it pass, then refactor with the tests passing. A bug fix starts with a test that reproduces the bug.
+- Write at least 3 lines of test code for every line of production code. Blank lines and comments are not counted. The ratio must hold for the whole repository, for each unit (a crate, a Gradle module, or another package with its own manifest), and for each production file.
+- Test code is all verification code: unit, integration and property tests, fuzz targets, Kani harnesses, hax and F* annotations, and test tools. A whole test file names the production files it tests in a `covers:` comment near its top.
+- Tests check behavior. Lines written only to reach the ratio, such as repeated assertions, assertions that cannot fail, or unused code, are not tests; reviewers reject them.
+- `scripts/check_test_ratio.py` enforces the ratio. Each implementation repository runs it from a pinned commit of this repository as the required `test-ratio` check. The ratio is fixed in the script. A repository's `test-ratio.toml` can only add test paths and ignore generated files.
+- Do not lower the ratio, exempt a production file, or mark production code as test code to pass the check. Changing the rule needs a pull request to this repository.
+
 ## AI-generated assets
 
 - Agents must never generate assets: no images, icons, logos, illustrations, fonts, sound, music, voice, video, 3D models, textures, or animations, including placeholders. This is permanent. See [AI_POLICY.md](AI_POLICY.md).
