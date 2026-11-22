@@ -7,7 +7,7 @@ This document describes goals, non-goals, architecture, terminology and the mess
 ## 1. Goals
 
 - **Security and privacy as the primary constraint.** Every component, feature, and deployment mode is designed under this requirement. None is exempt. Where another goal conflicts with security or privacy, the conflict is recorded as an open question. It is not resolved by weakening the requirement.
-- **No servers and no domain names.** Devices deliver messages to each other directly. No server stores, forwards, or orders anything for the protocol, and nothing depends on DNS (see [decision 0005](../decisions/0005-serverless-online-only-delivery.md)).
+- **No servers and no domain names.** Devices deliver messages to each other directly. No server stores, forwards, or orders anything for the protocol, and nothing depends on DNS (see [decision 0005](../decisions/0005-serverless-online-only-delivery.md)). This includes push services such as FCM, APNs, and UnifiedPush ([decision 0008](../decisions/0008-no-push-services.md)).
 - **Minimal metadata.** Reduce what parties other than the intended participants learn about who communicates, when, and from where. The current gaps are listed in section 3.3 and tracked in [open question 10](open-questions.md#10-metadata-minimization).
 - **Private messaging.** Message content is readable only by the intended participants and their devices.
 - **Communities and channels.** A community contains channels, members and roles, and has moderation against bad-faith members ([decision 0007](../decisions/0007-communities.md)). A channel is a multi-party conversation whose membership can change over time, and its keys follow membership changes.
@@ -19,7 +19,7 @@ This document describes goals, non-goals, architecture, terminology and the mess
 - **Voice and video.** Not specified in v0.1.
 - **Monetization.** Not addressed by the protocol.
 - **Content policy.** The protocol does not define which content is permitted. Mechanisms for handling reports are an open question (see [open question 6](open-questions.md#6-abuse-handling-for-an-encrypted-service)). Policy itself is out of scope.
-- **Delivery to offline devices.** A message is delivered only while both devices are reachable at the same time. Nothing stores messages for an offline device (see [decision 0005](../decisions/0005-serverless-online-only-delivery.md)).
+- **Delivery to offline devices.** A message is delivered only while both devices are reachable at the same time. Nothing stores messages for an offline device (see [decision 0005](../decisions/0005-serverless-online-only-delivery.md)), and no push service wakes one ([decision 0008](../decisions/0008-no-push-services.md)). How phones stay reachable is **[open]** ([open question 17](open-questions.md#17-mobile-reachability-without-push-services)).
 
 ## 3. Architecture
 
