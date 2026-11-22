@@ -1,6 +1,8 @@
 # 0003. MLS (RFC 9420) for group chats and channels
 
-**Status:** Proposed
+**Status:** Superseded
+
+Superseded by [decision 0006](0006-dcgka-for-groups.md). The text below is kept as it was proposed.
 
 ## Context
 
@@ -12,7 +14,7 @@ Group chats and channels have many members whose membership changes over time. P
 - Each channel is one MLS group. Each group chat is one MLS group. Whether a server is one group or several is an open question (see [open questions, section 11](../v0.1/open-questions.md#11-ambiguities-in-the-initial-brief)).
 - Membership changes are made with MLS commits. Each commit advances the group epoch.
 - The relay server acts as the MLS Delivery Service. It delivers handshake and application messages. It does not participate in key derivation.
-- The ciphersuite and group size limits are open (see [open question 9](../v0.1/open-questions.md#9-mls-ciphersuite-and-group-size-limits)).
+- The ciphersuite and group size limits are open (see [open question 9](../v0.1/open-questions.md#9-group-protocol-primitives-and-group-size-limits), which now covers DCGKA).
 
 ## Consequences
 

@@ -27,7 +27,7 @@ See [AI_POLICY.md](../AI_POLICY.md). Answer every line.
 
 ## Security and privacy impact
 
-<!-- Required. State what this change adds or removes in terms of what the relay server, other users, or network observers can learn. If there is no impact, say why. -->
+<!-- Required. State what this change adds or removes in terms of what contacts, group members, network observers, or transport relays can learn. If there is no impact, say why. -->
 
 ## Checklist
 

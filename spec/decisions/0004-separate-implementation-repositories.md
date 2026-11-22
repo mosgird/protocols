@@ -8,7 +8,7 @@ This repository started as a specification with placeholder directories for the 
 
 ## Decision
 
-- Implementations live in their own repositories: `mosgird/client` and `mosgird/server`. Further implementations get their own repositories too.
+- Implementations live in their own repositories: `mosgird/client` and `mosgird/android`. Further implementations get their own repositories too. A `mosgird/server` repository existed until [decision 0005](0005-serverless-online-only-delivery.md) removed the server from the protocol.
 - This repository is the source of truth for the protocol. It holds the specification, decision records, test vectors, and the rules that apply to all repositories.
 - Each implementation names the specification tag it follows (see [VERSIONING.md](../VERSIONING.md)). It documents its own platforms, build steps, and accessibility and security details.
 - Shared rules are kept once. The implementation repositories point to this repository's agent and contributor documents, and their contribution check runs this repository's checker at a pinned commit.
@@ -17,7 +17,7 @@ This repository started as a specification with placeholder directories for the 
 ## Consequences
 
 - A protocol change needs coordination across repositories. The specification change is merged and tagged before an implementation moves to it.
-- Each repository has its own ruleset, code owners, and automation. The rule set in this repository is the reference for the others.
+- Each repository has its own ruleset, code owners, and automation. The ruleset in this repository is the reference for the others.
 - The contribution check in each implementation depends on a pinned commit of this repository. That pin is updated by its own pull request.
 - Test vectors live here, so every implementation runs the same tests.
 

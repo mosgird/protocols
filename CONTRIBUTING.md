@@ -33,7 +33,7 @@ Thank you for helping with this protocol. This page is the short guide for peopl
 
 - Decisions go in `spec/decisions/` as numbered records. An accepted record is superseded, not edited in substance.
 - Uncertain points go in `spec/v0.1/open-questions.md`, with options and costs. Do not state them as settled.
-- Every pull request states its security and privacy impact. Any new information the relay server can observe is recorded in `spec/v0.1/overview.md` section 3.3.
+- Every pull request states its security and privacy impact. Any new information that parties other than the intended participants can observe is recorded in `spec/v0.1/overview.md` section 3.3.
 
 ## Outside contributors
 

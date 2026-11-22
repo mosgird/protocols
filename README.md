@@ -1,6 +1,6 @@
 # Mosgird protocols
 
-This repository is the source of truth for the Mosgird protocol: an end-to-end encrypted chat platform with servers, channels, direct messages, and roles.
+This repository is the source of truth for the Mosgird protocol: an end-to-end encrypted chat platform with communities, channels, direct messages, roles, and moderation, which runs without servers.
 
 It contains the specification, the decision records behind it, the test vectors that implementations must pass, and the rules for contributing to this repository. It contains no implementation code. Implementations live in their own repositories and follow this specification.
 
@@ -13,13 +13,13 @@ It contains the specification, the decision records behind it, the test vectors 
 | Repository | Role |
 |------------|------|
 | [mosgird/client](https://github.com/mosgird/client) | Client application |
-| [mosgird/server](https://github.com/mosgird/server) | Relay server |
+| [mosgird/android](https://github.com/mosgird/android) | Android application |
+
+The protocol has no server. Devices deliver messages to each other directly ([decision 0005](spec/decisions/0005-serverless-online-only-delivery.md)).
 
 Each implementation names the version of this specification it implements. When an implementation and this specification disagree, the specification is correct and the implementation has a bug, or the specification needs a change proposed here.
 
-## Where implementation details come from
-
-This repository is the reference for implementation details. Users and developers should read the specification here before relying on any behavior of an implementation. Implementations follow it: if one disagrees, the specification is correct and the implementation is the thing to fix.
+Users and developers should read the specification here before relying on any behavior of an implementation.
 
 ## Contents
 
@@ -37,5 +37,8 @@ This repository is the reference for implementation details. Users and developer
 | [ACCESSIBILITY.md](ACCESSIBILITY.md) | Accessibility goals for the documents and for implementers |
 | [scripts/check_spec.py](scripts/check_spec.py) | Consistency checks for the specification |
 | [scripts/check_contributions.py](scripts/check_contributions.py) | Pull request checks: session links, AI-use disclosure, commit trailers, asset attestation |
-| [.github/rulesets/main.json](.github/rulesets/main.json) | Branch rule set for `main` |
+| [.github/rulesets/main.json](.github/rulesets/main.json) | Branch ruleset for `main` |
+| [.github/rulesets/tags.json](.github/rulesets/tags.json) | Ruleset that protects release tags |
+| [scripts/check_semver_tag.py](scripts/check_semver_tag.py) | Release tag check: SemVer name, tagged commit on `main` |
+| [.github/workflows/](.github/workflows/) | CI workflows that run the checks above |
 | [.github/CODEOWNERS](.github/CODEOWNERS) | Code owners for automation, scripts, and policy files |

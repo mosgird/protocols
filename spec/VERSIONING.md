@@ -1,6 +1,6 @@
 # Versioning
 
-Mosgird uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) for the specification, the client, and the server. This document says how the rules apply to each of them.
+Mosgird uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) for the specification and for each implementation (`mosgird/client` and `mosgird/android`). This document says how the rules apply to each of them.
 
 ## Specification
 
@@ -11,16 +11,16 @@ A specification version is `MAJOR.MINOR.PATCH`. Its documents live in `spec/vMAJ
 The public API of the specification is everything an implementation depends on:
 
 - the wire format: message and envelope encodings, field names, and their meanings;
-- every procedure whose output a test vector checks, such as key agreement, ratchet steps, and MLS epoch derivation;
+- every procedure whose output a test vector checks, such as key agreement, ratchet steps, and group key updates;
 - every requirement written with MUST, MUST NOT, or SHALL.
 
-Changes to editorial text, examples, links, and open-question notes that do not change any of the above are not a version change in themselves.
+Changes to editorial text, examples, links, and open-question notes that do not change any of the above do not require a release of their own. They are included in the next release, whatever its level.
 
 ### Bumping the version
 
-- **PATCH** (`0.1.0` to `0.1.1`): backward-compatible corrections. Wording that is clarified without changing any requirement, a corrected test vector whose expected output was wrong, or a fixed broken link.
+- **PATCH** (`0.1.0` to `0.1.1`): backward-compatible corrections. A release that contains only editorial changes is a PATCH. A test vector whose expected output disagreed with the referenced document is corrected in a PATCH, because an implementation that follows the document already produces the corrected output.
 - **MINOR** (`0.1.0` to `0.2.0`): backward-compatible additions. A new optional behavior that an implementation may ignore, a new message type that old implementations can safely drop, or a new test vector for a new section.
-- **MAJOR** (`1.0.0` to `2.0.0`): any change that breaks an implementation written to the previous version. Changing a MUST, changing a wire field, or changing the output of an existing test vector is breaking.
+- **MAJOR** (`1.0.0` to `2.0.0`): any change that breaks an implementation written to the previous version. Changing a MUST, changing a wire field, or changing a procedure so that it produces a different output from the same input is breaking, and so is the test vector change that follows from it.
 
 A security fix that changes wire or procedural behavior is breaking if the old behavior was allowed. It takes the MAJOR bump, or the MINOR bump while the version is `0.y.z`.
 
@@ -43,16 +43,13 @@ A release is made only when:
 2. the test vectors for that version exist and pass the checks;
 3. the release notes list each change since the previous tag and mark each one as breaking or not.
 
-## Client and server
+## Implementations
 
-The client and the server each follow SemVer for their own releases, with the same tag format and the same tag protection.
+Each implementation follows SemVer for its own releases, with the same tag format and the same tag protection.
 
-Their public API is:
+Its public API is the library interface that other code calls, the behavior a user can observe, and the local storage format it writes.
 
-- for the client: the library interface that other code calls, and the behavior a user can observe;
-- for the server: its wire API, its configuration, and the storage it writes.
-
-A client or server release states the specification version it implements, in its README and its release notes. For example: "Implements mosgird/protocols `v0.1.0`."
+An implementation release states the specification version it implements, in its README and its release notes. For example: "Implements mosgird/protocols `v0.1.0`."
 
 Implementation versions and specification versions are separate. A client `1.4.2` may implement specification `0.1.0`. An implementation adopts a newer specification by its own pull request, which must pass the test vectors for that specification version. Adopting a breaking specification version is a breaking change for the implementation, so it takes a MAJOR bump, or a MINOR bump while the implementation is `0.y.z`.
 

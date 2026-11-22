@@ -1,6 +1,8 @@
 # 0001. Relay server with end-to-end encryption
 
-**Status:** Proposed
+**Status:** Superseded
+
+Superseded by [decision 0005](0005-serverless-online-only-delivery.md). The text below is kept as it was proposed.
 
 ## Context
 
@@ -15,7 +17,7 @@ The platform needs to deliver messages between users who may not be online at th
 
 ## Consequences
 
-- The server sees ciphertext, timing, sender and recipient identifiers, and IP addresses (see [overview section 3.3](../v0.1/overview.md#33-what-the-server-can-and-cannot-observe)).
+- The server sees ciphertext, timing, sender and recipient identifiers, and IP addresses (see [overview section 3.3](../v0.1/overview.md#33-what-other-parties-can-observe), which now describes the design without a server).
 - Message availability depends on the relay. A stored-and-forward queue is needed, with a retention policy that is not yet defined.
 - Clients must handle offline delivery, duplicate delivery, and out-of-order delivery.
 - A dishonest server can serve false public keys. Key verification is required to detect this (see [open question 4](../v0.1/open-questions.md#4-key-verification-method)).
