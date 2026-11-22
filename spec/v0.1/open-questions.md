@@ -167,7 +167,7 @@ Until [decision 0006](../decisions/0006-dcgka-for-groups.md), this question aske
 
 **Question:** Which concrete primitives instantiate DCGKA, and what group sizes must be supported?
 
-DCGKA needs a signature scheme for authenticated causal broadcast, a key derivation function (the paper uses HKDF), an authenticated encryption scheme for application messages, and the primitives of the two-party component ([question 15](#15-two-party-component-for-dcgka)).
+DCGKA needs a signature scheme for authenticated causal broadcast, a key derivation function (the paper uses HKDF), an authenticated encryption scheme for application messages, and the primitives of the two-party component ([decision 0019](../decisions/0019-two-party-component-for-dcgka.md)).
 
 **Options:**
 
