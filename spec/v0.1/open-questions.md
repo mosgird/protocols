@@ -362,13 +362,12 @@ DCGKA sends some secrets to a single member in a direct message, encrypted with 
   - Option: shorter rotation and retention. Cost: more two-party messages arrive after their prekey is gone, which breaks that pair's 2SM state.
   - Option: combine it with a one-time prekey whenever one exists (the option above). Cost: no help when no one-time prekey exists.
   - Option: no fallback. Cost: key updates stall for members who never meet in a session.
-- **Held and distrusted devices** (decision 0019, point 7).
-  - Option: send seed secrets to every member device. Cost: a device the user holds or distrusts can read that user's group messages, which goes further than [decision 0016](../decisions/0016-user-identity-and-linked-devices.md).
-  - Option: leave them out. Cost: changes DCGKA, which needs a new record and new analysis. The left-out device's view of the sender's ratchet diverges.
-- **Restarting a broken 2SM state.** A two-party message that cannot be read breaks that pair's state for that group, and DCGKA has no step to restart it.
-  - Option: the recipient removes and re-adds itself, or asks a member to. Cost: a membership change for the whole group.
-  - Option: a new 2SM state from a fresh prekey, announced in a control message. Cost: a change to DCGKA, which needs a new record and analysis.
-  - This belongs with the catch-up after expiry of [question 14](#14-retry-expiry-and-relaying-under-online-only-delivery).
+- **Held and distrusted devices** (decision 0019, point 7). Closed by [decision 0020](../decisions/0020-approval-before-joining-a-group.md): a device joins a group only after every member device approves it, and one member's distrust removes it for everyone.
+- **Devices added at the same time** (decision 0020, Consequences). Two devices added concurrently have not approved each other, and DCGKA has each send the other its ratchet state.
+  - Option: a member device removes an added device it has not approved, and proposes it again. Cost: the device may already hold the remover's ratchet state, and each concurrent add costs another removal and add.
+  - Option: a member device does not acknowledge the add until its user decides. Cost: a change to DCGKA's add-ack step, which needs analysis.
+- **Invalid adds** (decision 0020, point 3). How a member treats a later message that names an add without every approval among its causal predecessors.
+- **Restarting a broken 2SM state.** Closed by decision 0020 with removal and re-adding. How two repairs of the same device made at the same time are merged is open. The catch-up after expiry of [question 14](#14-retry-expiry-and-relaying-under-online-only-delivery) is still open.
 - **Cleartext fields of two-party messages.** The authors' format shows key indexes and which prekey a first message used, to every member. Encrypting or padding them costs bytes and a change to the authors' format.
 - **The extended paper.** Decision 0019 must be checked against the formal description in IACR ePrint 2020/1281 before it leaves Proposed.
 - **How many one-time prekeys** a device gives each other device, and when it gives more. Each first message in each group uses one. More prekeys mean fewer first messages under the signed prekey, but more keys to store and to send in each session.
@@ -394,6 +393,7 @@ Any mechanism must follow a published design for decentralized access control. N
 
 **Open detail:**
 
+- Who may remove a device that a member distrusts, and whether a member may block adds by withholding approval ([decision 0020](../decisions/0020-approval-before-joining-a-group.md)).
 - How two moderators who act against each other at the same time are resolved. DCGKA reaches the same membership from causal order (decision 0006). The permission rules must give the same answer too.
 - What evidence a moderator can see. It is limited to what reporters disclose (question 6, option A).
 - Whether moderation actions are logged, and who can read the log.
