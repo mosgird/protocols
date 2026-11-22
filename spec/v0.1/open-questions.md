@@ -66,7 +66,7 @@ Options that needed a server no longer apply after [decision 0005](../decisions/
 
 - How device lists are signed, distributed and checked without a server. Resolved by decision 0016: the user key signs them, any of the user's devices passes them on, and a list is accepted only with valid signatures and a higher version.
 - Whether one device can hide another device of the same user from a contact. Resolved by decision 0016: a device cannot change a signed list, and only the primary device can leave a device out of a new one. A device can pass on an older list, which is replaced as soon as any device passes on a newer one.
-- Under online-only delivery, each recipient device must be reachable separately, so a message can reach one of a user's devices and not another. Whether a user's devices pass messages to each other is [question 14](#14-retry-expiry-and-relaying-under-online-only-delivery), option B.
+- Under online-only delivery, each recipient device must be reachable separately, so a message can reach one of a user's devices and not another. Whether a user's devices pass messages to each other is [question 14](#14-retry-expiry-and-relaying-under-online-only-delivery), option B. Not chosen for direct messages by [decision 0017](../decisions/0017-retry-expiry-and-relaying.md); it stays an open detail of question 14.
 - The highest number of devices per user, and the exact format of the device list and the link request.
 - How a client shows a held device to its user, so that approving it is an informed choice ([question 4](#4-key-verification-method)).
 
@@ -296,6 +296,8 @@ Since [decision 0012](../decisions/0012-mosgird-session-protocol.md), there are 
 
 ## 14. Retry, expiry and relaying under online-only delivery
 
+**Status:** closed by [decision 0017](../decisions/0017-retry-expiry-and-relaying.md): option A for direct messages and option C for groups, with hash-graph reconciliation between members, an expiry of 30 days by default, and delivery shown per device and per member. The open detail below is partly resolved there; what remains is listed at its end.
+
 **Question:** Under [decision 0005](../decisions/0005-serverless-online-only-delivery.md), how long does a sending device keep and retry undelivered messages, and may anyone other than the sender carry it?
 
 **Options:**
@@ -307,7 +309,18 @@ Since [decision 0012](../decisions/0012-mosgird-session-protocol.md), there are 
 - **C. Relaying by group members.** A member who received a group message passes it on to members who were offline when it was sent.
   - Cost: members store ciphertext for others and learn more about each other's online times. Whether this counts as store-and-forward under decision 0005 must be decided. DCGKA ([decision 0006](../decisions/0006-dcgka-for-groups.md)) requires every member to eventually process every causally prior message. Without this option, only the original sender can re-send, and a group stalls for a member whenever that sender is offline.
 
-**Open detail:** the expiry time, what the sender is told about undelivered messages, and limits on storage.
+**Open detail:**
+
+- The expiry time. Resolved by decision 0017: 30 days by default, from 1 to 90 days by the user's choice, counted from the earlier of the signed creation time and the time a device first stored the message.
+- What the sender is told about undelivered messages. Resolved by decision 0017: pending, delivered or expired, with delivery per device and per member on request.
+- Limits on storage. Resolved by decision 0017: 256 MiB per device by default, with messages held for others dropped first.
+- Whether this counts as store-and-forward under decision 0005 (option C). Resolved by decision 0017: a member relays only messages of its own groups, which it can read, so it is an intended participant, not a third party.
+
+Still open:
+
+- How a member catches up when every copy of a message it needs has expired. DCGKA processes messages in causal order, so the member is stuck. The proposed remedy is to remove the member and add it again. Options: that remedy, which costs a membership change and a key update for the whole group; longer expiry for control messages, which costs storage; or both.
+- Option B for direct messages: a recipient's device passing a direct message to the recipient's other devices. Decision 0016 holds a contact's new device until the user approves it, and the recipient's devices do not know which devices the sender approved. Options: keep sender-only delivery, which costs slower delivery to rarely-online devices; let the sender name the approved devices in each message, which costs telling the recipient the sender's trust states, which decision 0016 keeps local; or encrypt to each approved device's identity key for later delivery, which costs forward secrecy until that device's next handshake and needs a published design.
+- How a phone retries without push services ([question 17](#17-mobile-reachability-without-push-services)).
 
 ---
 
