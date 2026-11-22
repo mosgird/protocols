@@ -13,7 +13,7 @@ The team chose Tor onion services and I2P for the internet. It also chose local 
 - **Internet transports.** A device is reachable as a Tor onion service and as an I2P destination. Its address on each network is derived from a public key, as each network defines it: a version 3 onion address for Tor, and a destination for I2P. A client supports both networks. Whether a device runs both at the same time, and how it chooses one for each contact, is open ([open question 12](../v0.1/open-questions.md#12-transport-and-addressing)).
 - **No direct internet connections.** Clients do not connect to each other's network addresses directly over the internet, and they do not publish their network address for the protocol.
 - **Local links.** Clients may also deliver over Bluetooth, Wi-Fi Direct, and the local network when two devices are nearby. This is meant for times when neither Tor nor I2P can be reached, for example during a network shutdown. Whether local links are also used while the internet is available is open.
-- **Encryption on every link.** The end-to-end encryption of decisions 0002 and 0006 applies on every transport. In addition:
+- **Encryption on every link.** The end-to-end encryption of decisions 0012 and 0006 (0012 replaced 0002) applies on every transport. In addition:
   - Over local links, devices first run an authenticated key exchange from a published design, such as a handshake from the Noise Protocol Framework. Only then do they send anything beyond what discovery needs. Which handshake is used is open.
   - The security that Bluetooth or Wi-Fi provides is not relied upon.
   - A client never falls back to an unencrypted or unauthenticated link on any transport. If it cannot establish one, it does not connect.
@@ -29,7 +29,7 @@ The team chose Tor onion services and I2P for the internet. It also chose local 
 - **Latency.** Both networks route through several relays, so delivery is slower than a direct connection. This is acceptable for messaging, and the protocol must not assume low latency.
 - **Neither network resists an observer who sees the whole network.** Timing correlation across the network remains possible. This limit is recorded in overview section 3.3 and [open question 10](../v0.1/open-questions.md#10-metadata-minimization).
 - **Local links reveal presence.** Nearby observers can see that a device is broadcasting or connecting. Discovery that hides stable identifiers limits what they learn, but does not hide the radio activity itself.
-- **Implementation.** The specification does not name a Tor or I2P implementation or library. That choice belongs to `mosgird/client` and `mosgird/android`, which must follow this record.
+- **Implementation.** The specification does not name a Tor or I2P implementation or library. That choice belongs to the implementation, now the shared library `mosgird/core` ([decision 0010](0010-shared-core-library.md)), which must follow this record.
 
 ## Alternatives considered
 

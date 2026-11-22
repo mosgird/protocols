@@ -12,6 +12,7 @@ It contains the specification, the decision records behind it, the test vectors 
 
 | Repository | Role |
 |------------|------|
+| [mosgird/core](https://github.com/mosgird/core) | Shared library: protocol, cryptography, storage, and transports ([decision 0010](spec/decisions/0010-shared-core-library.md)). To be created after that decision is merged. |
 | [mosgird/client](https://github.com/mosgird/client) | Client application |
 | [mosgird/android](https://github.com/mosgird/android) | Android application |
 

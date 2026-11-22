@@ -164,7 +164,7 @@ DCGKA needs a signature scheme for authenticated causal broadcast, a key derivat
 **Open detail:**
 
 - The maximum channel size for v0.1. The paper reports 70 ms of CPU and 40 kB of traffic per key update at 128 members, with cost growing linearly. Measurements on target devices are not yet done.
-- Whether every primitive is available in libsodium, as [decision 0002](../decisions/0002-signal-for-direct-messages.md) requires for direct messages.
+- Whether every primitive is available in libsodium, or in libcrux, as [decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md) requires.
 - How test vectors are produced. No published vectors exist for DCGKA, and the test-vector rule forbids copying them from an implementation.
 - How the team's choice of a post-quantum key exchange applies to groups.
 
@@ -251,7 +251,9 @@ Every option below carries ciphertext that is already end-to-end encrypted. The 
 
 ## 13. First contact without a directory
 
-**Question:** How does a device get another device's address and pre-key bundle the first time, with no server to publish them?
+**Question:** How does a device get another device's address and identity KEM key the first time, with no server to publish them?
+
+Since [decision 0012](../decisions/0012-mosgird-session-protocol.md), there are no pre-key bundles. A device needs only the other device's address and identity KEM key, and starts an interactive handshake. Options below that mention a bundle now mean those two items.
 
 **Options:**
 
@@ -266,13 +268,16 @@ Every option below carries ciphertext that is already end-to-end encrypted. The 
 - **E. Contact only with permission.** A device accepts nothing but a contact request from an unknown device. No messages are delivered until the recipient's user accepts the request. Alternatively, both users must each add the other, as Briar does for contacts added at a distance. The team suggested this. It combines with A to D.
   - Cost: stops unsolicited messages before any conversation starts. The request itself is still delivered, so requests can be used for spam or harassment. Rate limits or proof-of-work against this are open. A request reveals the requester's address and identity key to the recipient before the recipient accepts. Mutual adding avoids that, but both users must act.
 
-**Open detail:** whether one-time pre-keys are still needed when a bundle is exchanged directly, and how a device replaces a bundle that has been used.
+**Open detail:**
+
+- One-time pre-keys: resolved by decision 0012. Each connection runs an interactive handshake with fresh ephemeral keys, so no pre-keys exist.
+- What a contact link or QR code carries. The identity KEM key is 1,216 bytes, so a link may carry the address and a fingerprint instead, with the key fetched over the transport and checked against the fingerprint.
 
 ---
 
 ## 14. Retry, expiry and relaying under online-only delivery
 
-**Question:** Under [decision 0005](../decisions/0005-serverless-online-only-delivery.md), how long does a sending device keep and retry undelivered ciphertext, and may anyone other than the sender carry it?
+**Question:** Under [decision 0005](../decisions/0005-serverless-online-only-delivery.md), how long does a sending device keep and retry undelivered messages, and may anyone other than the sender carry it?
 
 **Options:**
 
@@ -295,14 +300,14 @@ DCGKA sends some secrets to a single member in a direct message, encrypted with 
 
 **Options:**
 
-- **A. The protocol the paper uses (Jost, Maurer, Mularczyk).** Direct messages keep the Double Ratchet ([decision 0002](../decisions/0002-signal-for-direct-messages.md)).
+- **A. The protocol the paper uses (Jost, Maurer, Mularczyk).** Direct messages keep the Mosgird session protocol ([decision 0012](../decisions/0012-mosgird-session-protocol.md), which replaced the Double Ratchet of decision 0002).
   - Cost: two different two-party protocols to implement and test. The 2SM protocol is less widely implemented than the Double Ratchet. Its cost on phones must be measured. The paper's security analysis applies.
-- **B. The Double Ratchet as the 2SM component.** One two-party protocol for everything.
-  - Cost: the paper says this does not suffice for its guarantees. The paper's security proof would not apply as stated, and new analysis would be needed. The project does not do that analysis itself. Not a recommended option.
-- **C. The paper's protocol for direct messages too.** Replace the Double Ratchet in decision 0002 with the same 2SM protocol, or treat a direct message as a two-member group.
-  - Cost: supersedes decision 0002. Loses the wide review and deployment of the Signal design. One two-party protocol to implement.
+- **B. The Mosgird session protocol as the 2SM component.** One two-party protocol for everything. Its ratchet (decision 0012) heals on each change of direction, like the Double Ratchet.
+  - Cost: the paper says a ratchet of this kind does not suffice for its guarantees. The paper's security proof would not apply as stated, and new analysis would be needed. The project does not do that analysis itself. Not a recommended option.
+- **C. The paper's protocol for direct messages too.** Replace the ratchet of decision 0012 with the same 2SM protocol, or treat a direct message as a two-member group.
+  - Cost: supersedes part of decision 0012. One two-party protocol to implement.
 
-**Open detail:** the paper requires that 2SM map identities to public keys through a public key infrastructure that includes ephemeral prekeys. Under decision 0005 those prekeys come from first contact ([question 13](#13-first-contact-without-a-directory)).
+**Open detail:** the paper requires that 2SM map identities to public keys through a public key infrastructure that includes ephemeral prekeys. Under decision 0005 those prekeys come from first contact ([question 13](#13-first-contact-without-a-directory)). Decision 0012 has no prekeys, so option A would bring them back for groups only. Whether the 2SM protocol of Jost, Maurer, and Mularczyk can be instantiated with post-quantum primitives at the level of [decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md) must be checked against the paper.
 
 ---
 
@@ -355,3 +360,57 @@ Platform limits change between operating system versions. The costs below must b
 - Whether an iOS client is possible with any option other than A.
 - Battery and data cost of B on each candidate transport ([question 12](#12-transport-and-addressing)). This needs measurement, not estimates.
 - Whether the client's notification text, in option B, can avoid naming the app.
+
+---
+
+## 18. Post-quantum deniable authentication
+
+**Status:** closed by [decision 0012](../decisions/0012-mosgird-session-protocol.md) with option B: authentication by key encapsulation, using the Post-Quantum Noise framework. The open detail below is still open.
+
+**Question:** How do two devices authenticate each other in a way that resists quantum attackers and stays deniable ([decision 0011](../decisions/0011-cryptographic-suite-and-security-level.md))?
+
+X-Wing protects the confidentiality of a session against quantum attackers. Authentication is a separate property. It must hold at the time a session is set up, and it must not produce proof that a third party could check. Signatures produce such proof, so session setup is not signed.
+
+Delivery is online-only ([decision 0005](../decisions/0005-serverless-online-only-delivery.md)), so session setup can be interactive. Both devices are online at the same time. This allows designs that need a round trip, which Signal's asynchronous handshake avoids.
+
+**Options:**
+
+- **A. Classical deniable authentication for now.** Devices authenticate each other with X25519 Diffie-Hellman between identity and session keys, as X3DH and Signal's PQXDH do. X-Wing adds post-quantum confidentiality.
+  - Cost: deniable, and built on published, analyzed designs. Authentication is classical. Once a quantum computer exists, an attacker who can break X25519 at the time of setup can impersonate a device. Recorded sessions stay confidential.
+- **B. Authentication by key encapsulation.** Each device holds a long-term X-Wing key. Each side encapsulates a secret to the other's long-term key, and only the holder of the matching private key can derive the session keys. Published designs of this kind include KEMTLS (Schwabe, Stebila, Wiggers, ACM CCS 2020) and Post-Quantum Noise (Angel, Dowling, Hülsing, Schwabe, Weber, ACM CCS 2022).
+  - Cost: post-quantum and deniable, because nothing is signed. The designs are newer than X3DH and need more round trips, which online-only delivery permits. Adapting them to Mosgird must not change their structure, and needs a cryptographer's review.
+- **C. Deniable post-quantum signatures.** Designated-verifier signatures (Brendel, Fiedler, Günther, Janson, Stebila, PKC 2022) or ring signatures (RingXKEM, Hashimoto, Katsumata, Niot, Tucker, Wiggers).
+  - Cost: designed for an asynchronous handshake like Signal's. They are research designs with no production library.
+- **D. Sign session setup with the hybrid signature.**
+  - Cost: post-quantum authentication, but not deniable. A signed transcript proves to anyone who took part. This conflicts with the team's deniability requirement and is listed for completeness.
+
+**Open detail:**
+
+- How the Ed25519 and ML-DSA-87 parts of a signature are bound together (decision 0011). It must follow a published design so that neither part can be removed or replaced alone.
+- How the chosen option interacts with first contact ([question 13](#13-first-contact-without-a-directory)) and with the group protocol's two-party component ([question 15](#15-two-party-component-for-dcgka)).
+- Group control messages are signed, because DCGKA requires it. Group membership changes are therefore not deniable to other members, even if direct messages are.
+
+---
+
+## 19. Protection of data stored on the device
+
+**Question:** How does a device protect what it stores: identity keys, contacts, message history, and messages waiting for delivery?
+
+Forward secrecy ([decision 0012](../decisions/0012-mosgird-session-protocol.md)) protects traffic, not stored data. Someone with access to an unlocked device, or to a copy of its storage, can read everything the device keeps unless the storage itself is protected. Messages waiting for delivery are kept in plaintext form until the next connection, so they depend on this protection too.
+
+**Options (may be combined):**
+
+- **A. Encrypt storage under a key held by the operating system's key store.** Examples are the Android Keystore and the Apple Keychain, backed by secure hardware where present.
+  - Cost: protects against copying the storage off the device. Does not protect against someone who can unlock the device. The strength depends on the platform and the hardware.
+- **B. Encrypt storage under a key derived from a passphrase** (Argon2id, in libsodium).
+  - Cost: protects even if the device is unlocked, while the app is locked. Users must remember another secret, which conflicts with the goal of being easy for everyone. A forgotten passphrase loses all data.
+- **C. Disappearing messages.** Messages are deleted after a time that the conversation sets.
+  - Cost: limits what a seized device reveals. The other side's device must also delete, and a modified client can ignore the setting.
+- **D. Keep no history.** Messages are shown and then deleted, unless the user saves them.
+  - Cost: the strongest protection of history, and the least convenient.
+
+**Open detail:**
+
+- How long undelivered messages are kept ([question 14](#14-retry-expiry-and-relaying-under-online-only-delivery)).
+- Whether backups exist, and how they are encrypted ([question 5](#5-message-history-sync)).
+- Whether all of this is the same on every platform, which the core library ([decision 0010](../decisions/0010-shared-core-library.md)) makes possible.

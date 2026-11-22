@@ -53,7 +53,7 @@ Assets made by people are welcome. Their creators keep their own licenses, and t
 ## What you may not do
 
 - **Do not generate assets with AI.** This is permanently prohibited. See "Assets: permanently prohibited" above.
-- **Do not use AI-generated designs for cryptography or for key handling.** The project references published designs (X3DH, the Double Ratchet, DCGKA, libsodium primitives) and does not invent constructions. AI-assisted edits to these areas must be written or line-by-line reviewed by a human who can check them against the source.
+- **Do not use AI-generated designs for cryptography or for key handling.** The project references published designs (Post-Quantum Noise, the generic double ratchet, X-Wing, DCGKA, and libsodium and libcrux primitives) and does not invent constructions. AI-assisted edits to these areas must be written or line-by-line reviewed by a human who can check them against the source.
 - **Do not paste secrets, private keys, unpublished code, or personal data into an AI tool.**
 - **Do not submit output you have not checked.** Unreviewed generated text or code is rejected.
 

@@ -1,6 +1,6 @@
 # Versioning
 
-Mosgird uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) for the specification and for each implementation (`mosgird/client` and `mosgird/android`). This document says how the rules apply to each of them.
+Mosgird uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) for the specification and for each implementation (`mosgird/core`, `mosgird/client`, and `mosgird/android`). This document says how the rules apply to each of them.
 
 ## Specification
 
