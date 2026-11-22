@@ -20,7 +20,7 @@ This repository holds the protocol specification. It contains no implementation 
   ```
 
 - **Fill in the pull request template completely**, including the security and privacy section. Do not delete sections; write "not applicable" with a reason.
-- **Session links are banned** in commit messages and pull request descriptions. Commit trailers (`Co-authored-by`, `Task`) and AI disclosure follow [AI_POLICY.md](AI_POLICY.md). The `contribution-policy` check runs on every pull request. It is not yet a required check in the branch rules, so a failing run does not block merging until it is added.
+- **Session links are banned** in commit messages and pull request descriptions. Commit trailers (`Co-authored-by`, `Task`) and AI disclosure follow [AI_POLICY.md](AI_POLICY.md). The `contribution-policy` check runs on every pull request and is a required check in the branch rules, like `spec-consistency`.
 
 ## Contributors and commit signing
 
@@ -71,7 +71,7 @@ Security and privacy are the primary constraint of this project. No component, f
 ## Files that must not change without a decision
 
 - `LICENSE.md`: the Mulan PSL v2 text from `https://spdx.org/licenses/MulanPSL-2.0`. Do not edit it.
-- `.github/rulesets/main.json`: the branch rule set. Change it only in a pull request that says why.
+- `.github/rulesets/main.json` and `.github/rulesets/tags.json`: the branch and tag rulesets. Change them only in a pull request that says why.
 
 ## Before you finish a task
 

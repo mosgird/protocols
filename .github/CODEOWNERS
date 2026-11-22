@@ -3,7 +3,9 @@
 # A bare organization (@mosgird) is not a valid owner; teams are.
 *                       @mosgird/developers
 
-# Changes to automation and branch rules always need the owner.
+# Changes to automation, branch rules and policy are flagged for the owner.
+# The `*` line already covers them; these lines document which paths matter.
+# Review is not required by the branch rules (see the comment above).
 /.github/               @mosgird/developers
 /scripts/               @mosgird/developers
 /AGENTS.md              @mosgird/developers

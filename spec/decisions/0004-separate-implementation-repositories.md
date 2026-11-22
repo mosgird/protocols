@@ -17,7 +17,7 @@ This repository started as a specification with placeholder directories for the 
 ## Consequences
 
 - A protocol change needs coordination across repositories. The specification change is merged and tagged before an implementation moves to it.
-- Each repository has its own ruleset, code owners, and automation. The rule set in this repository is the reference for the others.
+- Each repository has its own ruleset, code owners, and automation. The ruleset in this repository is the reference for the others.
 - The contribution check in each implementation depends on a pinned commit of this repository. That pin is updated by its own pull request.
 - Test vectors live here, so every implementation runs the same tests.
 

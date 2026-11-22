@@ -19,9 +19,7 @@ The protocol has no server. Devices deliver messages to each other directly ([de
 
 Each implementation names the version of this specification it implements. When an implementation and this specification disagree, the specification is correct and the implementation has a bug, or the specification needs a change proposed here.
 
-## Where implementation details come from
-
-This repository is the reference for implementation details. Users and developers should read the specification here before relying on any behavior of an implementation. Implementations follow it: if one disagrees, the specification is correct and the implementation is the thing to fix.
+Users and developers should read the specification here before relying on any behavior of an implementation.
 
 ## Contents
 
@@ -39,5 +37,8 @@ This repository is the reference for implementation details. Users and developer
 | [ACCESSIBILITY.md](ACCESSIBILITY.md) | Accessibility goals for the documents and for implementers |
 | [scripts/check_spec.py](scripts/check_spec.py) | Consistency checks for the specification |
 | [scripts/check_contributions.py](scripts/check_contributions.py) | Pull request checks: session links, AI-use disclosure, commit trailers, asset attestation |
-| [.github/rulesets/main.json](.github/rulesets/main.json) | Branch rule set for `main` |
+| [.github/rulesets/main.json](.github/rulesets/main.json) | Branch ruleset for `main` |
+| [.github/rulesets/tags.json](.github/rulesets/tags.json) | Ruleset that protects release tags |
+| [scripts/check_semver_tag.py](scripts/check_semver_tag.py) | Release tag check: SemVer name, tagged commit on `main` |
+| [.github/workflows/](.github/workflows/) | CI workflows that run the checks above |
 | [.github/CODEOWNERS](.github/CODEOWNERS) | Code owners for automation, scripts, and policy files |
