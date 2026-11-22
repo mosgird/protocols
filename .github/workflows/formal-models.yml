@@ -67,6 +67,9 @@ jobs:
           key: opam-${{ env.OPAM_VERSION }}-ocaml-${{ env.OCAML_VERSION }}-proverif-${{ env.PROVERIF_VERSION }}
       - name: Install ProVerif
         run: |
+          # ProVerif's opam package depends on lablgtk (for its optional GUI), which needs GTK 2 headers.
+          sudo apt-get update -q
+          sudo apt-get install -y -q libgtk2.0-dev
           mkdir -p "$HOME/bin"
           curl -fsSL -o "$HOME/bin/opam" "https://github.com/ocaml/opam/releases/download/${OPAM_VERSION}/opam-${OPAM_VERSION}-x86_64-linux"
           echo "${OPAM_SHA256}  $HOME/bin/opam" | sha256sum -c -
