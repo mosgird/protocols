@@ -19,7 +19,7 @@ This document describes goals, non-goals, architecture, terminology and the mess
 - **Voice and video.** Not specified in v0.1.
 - **Monetization.** Not addressed by the protocol.
 - **Content policy.** The protocol does not define which content is permitted. Mechanisms for handling reports are an open question (see [open question 6](open-questions.md#6-abuse-handling-for-an-encrypted-service)). Policy itself is out of scope.
-- **Delivery to offline devices.** A message is delivered only while both devices are reachable at the same time. Nothing stores messages for an offline device (see [decision 0005](../decisions/0005-serverless-online-only-delivery.md)), and no push service wakes one ([decision 0008](../decisions/0008-no-push-services.md)). How phones stay reachable is **[open]** ([open question 17](open-questions.md#17-mobile-reachability-without-push-services)).
+- **Delivery to offline devices.** A message is delivered only while both devices are reachable at the same time. No third party stores messages for an offline device (see [decision 0005](../decisions/0005-serverless-online-only-delivery.md)). The sender keeps them, and group members pass on group control messages they already hold ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md)), and no push service wakes one ([decision 0008](../decisions/0008-no-push-services.md)). How phones stay reachable is **[open]** ([open question 17](open-questions.md#17-mobile-reachability-without-push-services)).
 
 ## 3. Architecture
 
@@ -69,7 +69,7 @@ Which devices a user approves, holds, or distrusts is stored only on that user's
 
 - The membership of the group, which member sent each message, who added or removed whom, and when each member updates their keys. DCGKA does not hide this from members ([decision 0006](../decisions/0006-dcgka-for-groups.md)).
 - The size and timing of each message, and the onion addresses and I2P destinations of the members they talk to directly.
-- When other members were online, and which group messages each member was missing, because members pass missing messages on to each other ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md)). Each member stores the group's messages until every member has acknowledged them or they expire.
+- When other members were online, and which group control messages each member was missing, because members pass missing messages on to each other ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md)). Each member stores the group's control messages until every member has acknowledged them or they expire.
 - Community and channel structure: names, roles, membership, and moderation actions. Whether non-members can learn any of this is **[open]** ([open question 7](open-questions.md#7-community-and-channel-structure-visibility)).
 
 **Network observers and transport relays can observe:**
@@ -83,6 +83,7 @@ Which devices a user approves, holds, or distrusts is stored only on that user's
 **Someone holding a copy of a device's storage, without its key store or passphrase ([decision 0015](../decisions/0015-protection-of-stored-data.md)), can observe:**
 
 - The number and size of stored records, and when they changed. The content is encrypted.
+- That the device holds other members' group control messages, for up to the expiry time, and from the hashes it keeps, how many messages its groups had ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md)).
 
 **No one other than the intended participants can observe:**
 
@@ -135,7 +136,7 @@ The group protocol is DCGKA ([decision 0006](../decisions/0006-dcgka-for-groups.
 2. To add or remove a member, or to update its own keys, a member device sends a control message to all members by authenticated causal broadcast. Each control message is signed under the sender's identity key. Secrets meant for one member travel in a direct message encrypted with the two-party component ([open question 15](open-questions.md#15-two-party-component-for-dcgka)).
 3. Each member device processes a message only after every message that causally precedes it. Members may change membership concurrently, and they reach the same membership from the causal order. No member or server decides a single order.
 4. To send an application message, a device encrypts it with the next key from its own ratchet and delivers the ciphertext directly to each member device it can reach.
-5. Each message names the hashes of the messages before it. Members acknowledge messages, and any member that holds a message passes it on to a member that is missing it. A relayed message is accepted only with its sender's signature ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md)).
+5. Each control message names the hashes of the messages before it. Members acknowledge control messages, and any member that holds one passes it on to a member that is missing it. A relayed message is accepted only with its sender's signature ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md)). Application messages are re-sent only by their sender, until it is decided whether they are signed.
 
 ## 6. References
 

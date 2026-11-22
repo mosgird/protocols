@@ -21,7 +21,7 @@ Shared ProVerif declarations are in [proverif/common.pvl](proverif/common.pvl).
 | Mutual authentication (injective agreement) | yes, both directions | yes, both directions | not modelled (inherited from the handshake) |
 | Sanity: an honest run completes | yes | yes | yes, and a compromise can leak a message |
 
-For group relaying (`group_relay.pv`): a message accepted as from an honest member was sent by that member with the same group, predecessor hashes and content, whichever member relayed it, while one member's key is compromised. The sanity query shows that a relayed message is accepted. Secrecy is not checked, because group keys come from DCGKA, which has no model yet.
+For group relaying (`group_relay.pv`): a message accepted as from an honest member was sent by that member with the same group, predecessor hashes and content, whichever member relayed it. The identifier is part of the signed content. The sanity query shows that a relayed message is accepted. Secrecy is not checked, because group keys come from DCGKA, which has no model yet.
 
 The sanity checks show that the models are not vacuous. A model in which no session completes would prove every property trivially. They were also checked once by hand with a negative control: removing the ephemeral encapsulation from `KK` makes ProVerif find the forward-secrecy attack. In `group_relay.pv`, removing the signature check makes ProVerif find forgeries for both authenticity queries.
 
@@ -53,5 +53,5 @@ These are open for the expert review.
   - that a device without an invite learns nothing;
   - messages that arrive out of order, and their skipped keys;
   - more than two honest devices;
-  - for group relaying: DCGKA itself, reconciliation (that every member eventually gets every message), expiry, and detection of a sender that signs two different messages. The hybrid signature is one ideal signature.
+  - for group relaying: DCGKA itself, the new signing key a member gets on every key update (one fixed key per member is modelled, so a leaked old key is not covered), reconciliation (that every member eventually gets every message), expiry, and detection of a sender that signs two messages that fork. The hybrid signature is one ideal signature.
 - **First contact assumes the link arrives unchanged.** A link that the attacker reads first lets it make a request in the invited user's place. Decision 0014 states this, and the model doesn't contradict it, because the attacker's own invites are modelled separately.

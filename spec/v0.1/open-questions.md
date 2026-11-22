@@ -311,14 +311,21 @@ Since [decision 0012](../decisions/0012-mosgird-session-protocol.md), there are 
 
 **Open detail:**
 
-- The expiry time. Resolved by decision 0017: 30 days by default, from 1 to 90 days by the user's choice, counted from the earlier of the signed creation time and the time a device first stored the message.
+- The expiry time. Resolved by decision 0017: 30 days by default, from 1 to 90 days by the user's choice, counted from when a device first stored the message. Messages a device has not yet processed do not expire.
 - What the sender is told about undelivered messages. Resolved by decision 0017: pending, delivered or expired, with delivery per device and per member on request.
-- Limits on storage. Resolved by decision 0017: 256 MiB per device by default, with messages held for others dropped first.
-- Whether this counts as store-and-forward under decision 0005 (option C). Resolved by decision 0017: a member relays only messages of its own groups, which it can read, so it is an intended participant, not a third party.
+- Limits on storage. Resolved by decision 0017: 256 MiB per device by default. Messages held for others are dropped first, starting with the sender that takes the most space.
+- Whether this counts as store-and-forward under decision 0005 (option C). Resolved by decision 0017: a member relays only control messages of its own groups, which it can check itself, so it is an intended participant, not a third party.
 
 Still open:
 
-- How a member catches up when every copy of a message it needs has expired. DCGKA processes messages in causal order, so the member is stuck. The proposed remedy is to remove the member and add it again. Options: that remedy, which costs a membership change and a key update for the whole group; longer expiry for control messages, which costs storage; or both.
+- How a member catches up when every copy of a control message it needs has expired. DCGKA processes control messages in causal order, so the member is stuck. Options:
+  - remove the member and add it again, which costs a membership change and a key update for the whole group, loses the messages in between for that member, and needs a member with permission to do it ([question 16](#16-community-moderation-without-an-operator));
+  - a longer expiry for control messages, which costs storage on every member device;
+  - both.
+- Whether group application messages are signed, so that members can check and relay them. Options:
+  - sign them, which lets members relay them but removes their deniability within the group;
+  - do not sign them, which keeps deniability, but only their sender can re-send them.
+- How far one member can use other members' storage by sending many large control messages. Decision 0017 evicts the largest sender's messages first. Whether a per-sender limit is needed, and which, is open.
 - Option B for direct messages: a recipient's device passing a direct message to the recipient's other devices. Decision 0016 holds a contact's new device until the user approves it, and the recipient's devices do not know which devices the sender approved. Options: keep sender-only delivery, which costs slower delivery to rarely-online devices; let the sender name the approved devices in each message, which costs telling the recipient the sender's trust states, which decision 0016 keeps local; or encrypt to each approved device's identity key for later delivery, which costs forward secrecy until that device's next handshake and needs a published design.
 - How a phone retries without push services ([question 17](#17-mobile-reachability-without-push-services)).
 

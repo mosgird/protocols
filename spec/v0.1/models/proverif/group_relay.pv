@@ -3,13 +3,18 @@
    DRAFT drafted by an AI tool. Not a proof until a human with
    ProVerif experience has reviewed every line (decision 0013).
 
-   Every group message carries the group, the hashes of its causal
-   predecessors, and its content, signed by its sender. Members pass
-   messages on to each other. The attacker plays every relaying
-   member: it carries all messages, and it holds the signing key of
-   one compromised member, M. Honest members A and B send any number
-   of messages with predecessors and content the attacker chooses,
-   and a receiving device accepts a message from any member.
+   Every group control message carries the group, its identifier,
+   the hashes of its causal predecessors, and its content, signed by
+   its sender. Members pass messages on to each other. The attacker
+   plays every relaying member and carries all messages; it can also
+   make signing keys of its own. Honest members A and B send any
+   number of messages with a group, identifier, predecessors and
+   content the attacker chooses, and a receiving device accepts a
+   message from any member.
+
+   One signing key per member: DCGKA's new signing key on every key
+   update (decision 0006) is not modelled. The identifier is part of
+   the content term m below.
 
    Abstractions:
    - The hybrid Ed25519 and ML-DSA-87 signature (decision 0011) is
@@ -28,7 +33,6 @@ reduc forall k: sskey, m: bitstring;
   verify(spk(k), m, sign(k, m)) = m.
 
 free skA, skB: sskey [private].
-free skM: sskey.        (* the compromised member: its key is public *)
 
 event Sent(spkey, bitstring, bitstring, bitstring).
 event Accepted(spkey, bitstring, bitstring, bitstring).
