@@ -388,6 +388,7 @@ Delivery is online-only ([decision 0005](../decisions/0005-serverless-online-onl
 
 - How the Ed25519 and ML-DSA-87 parts of a signature are bound together (decision 0011). It must follow a published design so that neither part can be removed or replaced alone.
 - How the chosen option interacts with first contact ([question 13](#13-first-contact-without-a-directory)) and with the group protocol's two-party component ([question 15](#15-two-party-component-for-dcgka)).
+- How deniability is shown for the patterns of decision 0012. The symbolic provers that [decision 0013](../decisions/0013-formal-verification.md) requires do not check deniability in their usual form, so it needs a separate argument.
 - Group control messages are signed, because DCGKA requires it. Group membership changes are therefore not deniable to other members, even if direct messages are.
 
 ---

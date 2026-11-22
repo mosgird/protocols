@@ -42,7 +42,7 @@ This closes [open question 18](../v0.1/open-questions.md#18-post-quantum-deniabl
 - **Forward secrecy.** Every message has its own key. Ephemeral keys from both sides protect even the first message of a connection.
 - **Recovery after a key leak** happens on every reply within a connection, and at the latest on the next connection.
 - **No pre-keys.** No pre-key bundles, signed pre-keys, or one-time pre-keys exist. The open detail about one-time pre-keys in question 13 no longer applies.
-- **Deniability needs confirmation.** Either party can compute every secret of a session, so a transcript proves nothing to a third party. This is expected to give deniability comparable to Diffie-Hellman handshakes. The deniability properties of KEM-based Noise patterns must be confirmed by a cryptographer against the paper before this record is accepted.
+- **Deniability needs confirmation.** Either party can compute every secret of a session, so a transcript proves nothing to a third party. This is expected to give deniability comparable to Diffie-Hellman handshakes. The deniability properties of KEM-based Noise patterns must be confirmed by a cryptographer against the paper before this record is accepted. [Decision 0013](0013-formal-verification.md) also requires a Tamarin or ProVerif model and proof of this protocol before acceptance.
 - **No audited production library implements Post-Quantum Noise.** The core library implements it from the paper, on libsodium's X-Wing, BLAKE2b, and XChaCha20-Poly1305. That code needs a cryptographer's review and independent test vectors.
 - **Bandwidth.** An X-Wing public key is 1,216 bytes and a ciphertext 1,120 bytes:
   - A handshake carries several of each, a few kilobytes in total, once per connection.
