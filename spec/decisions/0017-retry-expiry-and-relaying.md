@@ -39,7 +39,7 @@ The relaying follows a published design: M. Kleppmann and H. Howard, "Byzantine 
    - A message is passed on only to a device that lacks it, so a message stops travelling once every member device has it.
    - A message that a device has not yet processed, because a predecessor is missing, does not expire. Nor does any message that such a message names as a predecessor.
    - When a processed message expires, it is deleted. Its identifier and hash are kept, so that it is not requested again during reconciliation.
-9. **What the sender sees.** Each message shows one of three states: pending, delivered, or expired. On request, the sender sees delivery per device ("delivered to 2 of 3 devices") or per member ("delivered to 4 of 6 members"). An expired message is shown as not delivered to the devices or members that never acknowledged it. Held devices are listed apart from approved ones.
+9. **What the sender sees.** Each message shows one of three states: pending, delivered, or expired. On request, the sender sees delivery per device ("delivered to 2 of 3 devices") or per member ("delivered to 4 of 6 members"). An expired message is shown as not delivered to the devices or members that never acknowledged it. For direct messages, held devices are listed apart from approved ones. A group has no held member devices ([decision 0020](0020-approval-before-joining-a-group.md)).
 10. **Storage limit.**
     - Pending and relayed messages share a limit of 256 MiB per device by default. Attachments are not counted here ([open question 8](../v0.1/open-questions.md#8-attachments-and-file-transfer)).
     - When the limit is reached, a device drops messages it holds for others, starting with the sender whose messages take the most space, oldest first.

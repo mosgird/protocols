@@ -1,0 +1,97 @@
+(* Mosgird groups: a device joins a group only after every member
+   device has approved it (decision 0020, points 1 to 3).
+   DRAFT drafted by an AI tool. Not a proof until a human with
+   ProVerif experience has reviewed every line (decision 0013).
+
+   The group has two honest member devices, A and B. The attacker
+   plays every other member, including the one that sends the add,
+   carries all messages, and chooses which device keys are proposed;
+   it can make device keys of its own. A's user approves every device
+   the attacker proposes, for any group. B's user approves only one
+   honest device D, whose private key the attacker never learns.
+   An approval is a signed statement about one device in one group.
+
+   When an honest member processes an add, it checks an approval from
+   every member device, A and B, for that device in that group. Only
+   then does it send the new device its seed secret, encrypted with
+   X-Wing then the AEAD (decision 0019, point 2), as DCGKA's add does.
+
+   Abstractions:
+   - The hybrid signature is one ideal signature, as in
+     group_relay.pv. Each member has one fixed signing key.
+   - The membership is fixed at A and B, hardcoded in the check;
+     membership computed from causal order is not modelled. Nor are
+     withdrawals, member identifiers, the new device's approvals of
+     the members, concurrent adds, removal, or the recovery of
+     decision 0020, point 6.
+   - DCGKA around the add is not modelled; each member's seed secret
+     is one fixed secret that stands for everything an added device
+     receives from that member. *)
+
+type sskey.
+type spkey.
+
+fun spk(sskey): spkey.
+fun sign(sskey, bitstring): bitstring.
+reduc forall k: sskey, m: bitstring;
+  verify(spk(k), m, sign(k, m)) = m.
+
+const tag_approve: bitstring.
+
+free skA, skB: sskey [private].
+free skD: skey [private].
+free seedA, seedB: bitstring [private].
+
+event Approved(spkey, bitstring, pkey).
+event SeedSent(spkey, bitstring, pkey).
+
+(* An honest member sends its seed secret to a device in a group only
+   if both members approved that device for that group. *)
+query g: bitstring, d: pkey;
+  event(SeedSent(spk(skA), g, d)) ==>
+    (event(Approved(spk(skA), g, d)) && event(Approved(spk(skB), g, d))).
+query g: bitstring, d: pkey;
+  event(SeedSent(spk(skB), g, d)) ==>
+    (event(Approved(spk(skA), g, d)) && event(Approved(spk(skB), g, d))).
+
+(* No seed secret reaches the attacker: a device that B has not
+   approved, such as any device the attacker made, learns nothing. *)
+query attacker(seedA).
+query attacker(seedB).
+
+(* Sanity: A does send a seed secret. ProVerif must report this as
+   false (the event is reachable); otherwise the model is vacuous. *)
+query g: bitstring, d: pkey;
+  event(SeedSent(spk(skA), g, d)).
+
+(* An honest member approves a proposed device for a group. The
+   approval names the group, so it cannot be reused in another group.
+   Leaving the group out of the signed content lets ProVerif find a
+   seed sent without approval for that group (negative control, see
+   README.md). *)
+let ApproverA =
+  in(c, (g: bitstring, d: pkey));
+  event Approved(spk(skA), g, d);
+  out(c, sign(skA, (tag_approve, g, pk2b(d)))).
+
+let ApproverB =
+  in(c, g: bitstring);
+  event Approved(spk(skB), g, pk(skD));
+  out(c, sign(skB, (tag_approve, g, pk2b(pk(skD))))).
+
+(* An honest member processes an add that the attacker sent. It checks
+   an approval from each member device. Dropping the check of B's
+   approval lets ProVerif find a seed sent without it (negative
+   control, see README.md). *)
+let Member(sk: sskey, seed: bitstring) =
+  in(c, (g: bitstring, d: pkey, sa: bitstring, sb: bitstring));
+  let (=tag_approve, =g, =pk2b(d)) = verify(spk(skA), (tag_approve, g, pk2b(d)), sa) in
+  let (=tag_approve, =g, =pk2b(d)) = verify(spk(skB), (tag_approve, g, pk2b(d)), sb) in
+  event SeedSent(spk(sk), g, d);
+  new r: coins;
+  out(c, (kem_ct(d, r), aead_enc(kem_ss(d, r), g, seed))).
+
+process
+  out(c, (spk(skA), spk(skB), pk(skD)));
+  ( (!ApproverA) | (!ApproverB)
+  | (!Member(skA, seedA)) | (!Member(skB, seedB)) )

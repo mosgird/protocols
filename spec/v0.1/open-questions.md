@@ -362,13 +362,8 @@ DCGKA sends some secrets to a single member in a direct message, encrypted with 
   - Option: shorter rotation and retention. Cost: more two-party messages arrive after their prekey is gone, which breaks that pair's 2SM state.
   - Option: combine it with a one-time prekey whenever one exists (the option above). Cost: no help when no one-time prekey exists.
   - Option: no fallback. Cost: key updates stall for members who never meet in a session.
-- **Held and distrusted devices** (decision 0019, point 7).
-  - Option: send seed secrets to every member device. Cost: a device the user holds or distrusts can read that user's group messages, which goes further than [decision 0016](../decisions/0016-user-identity-and-linked-devices.md).
-  - Option: leave them out. Cost: changes DCGKA, which needs a new record and new analysis. The left-out device's view of the sender's ratchet diverges.
-- **Restarting a broken 2SM state.** A two-party message that cannot be read breaks that pair's state for that group, and DCGKA has no step to restart it.
-  - Option: the recipient removes and re-adds itself, or asks a member to. Cost: a membership change for the whole group.
-  - Option: a new 2SM state from a fresh prekey, announced in a control message. Cost: a change to DCGKA, which needs a new record and analysis.
-  - This belongs with the catch-up after expiry of [question 14](#14-retry-expiry-and-relaying-under-online-only-delivery).
+- **Held and distrusted devices** (decision 0019, point 7). Closed by [decision 0020](../decisions/0020-approval-before-joining-a-group.md): a device joins a group only after every member device approves it, and one member's distrust removes it for everyone.
+- **Restarting a broken 2SM state.** Closed by decision 0020: the device is removed and added again under a new member identifier. The open details of that approach are in [question 20](#20-membership-approval-in-groups). The catch-up after expiry of [question 14](#14-retry-expiry-and-relaying-under-online-only-delivery) is still open.
 - **Cleartext fields of two-party messages.** The authors' format shows key indexes and which prekey a first message used, to every member. Encrypting or padding them costs bytes and a change to the authors' format.
 - **The extended paper.** Decision 0019 must be checked against the formal description in IACR ePrint 2020/1281 before it leaves Proposed.
 - **How many one-time prekeys** a device gives each other device, and when it gives more. Each first message in each group uses one. More prekeys mean fewer first messages under the signed prekey, but more keys to store and to send in each session.
@@ -394,6 +389,7 @@ Any mechanism must follow a published design for decentralized access control. N
 
 **Open detail:**
 
+- Who may remove a device that a member distrusts, and whether a member may block adds by withholding approval ([decision 0020](../decisions/0020-approval-before-joining-a-group.md)).
 - How two moderators who act against each other at the same time are resolved. DCGKA reaches the same membership from causal order (decision 0006). The permission rules must give the same answer too.
 - What evidence a moderator can see. It is limited to what reporters disclose (question 6, option A).
 - Whether moderation actions are logged, and who can read the log.
@@ -484,3 +480,30 @@ Forward secrecy ([decision 0012](../decisions/0012-mosgird-session-protocol.md))
 - Whether all of this is the same on every platform, which the core library ([decision 0010](../decisions/0010-shared-core-library.md)) makes possible. Resolved by decision 0015: the core library encrypts records itself everywhere, and only the key store differs.
 - Whether stored records are padded, so that a copy of the storage does not reveal how much a user talks.
 - Disappearing messages: whether they are added, their default, and how the other device is asked to honour them.
+
+---
+
+## 20. Membership approval in groups
+
+**Status:** open. [Decision 0020](../decisions/0020-approval-before-joining-a-group.md) lets a device join a group only after every member device has approved it, and lets the new device approve every member device in turn. The details below are not settled.
+
+**Question:** How do approvals, withdrawals and repairs behave when members act at the same time, and what does the history of approvals cost?
+
+**Open detail:**
+
+- **Devices added at the same time.** Two devices added concurrently have not approved each other, and DCGKA has each send the other its ratchet state with its acknowledgment.
+  - Option: a member device removes an added device it has not approved, and proposes it again. Cost: the device may already hold the remover's ratchet state, and each concurrent add costs another removal and add.
+  - Option: a member device does not acknowledge an add of a device it has not approved until its user decides. Cost: a change to DCGKA's add-ack step, which needs analysis.
+  - Option: allow one proposal at a time in a group, and drop any add whose causal history holds an unfinished concurrent proposal. Cost: adds become slower in busy groups, and the rule changes when DCGKA's add takes effect, which needs analysis.
+- **Messages that name an invalid add.** An add without every approval has no effect (decision 0020, point 3). An honest member never sends one, but it may receive one and then name it as a causal predecessor.
+  - Option: treat the invalid add as an empty message that stays in the causal graph. Cost: members keep and relay messages with no effect.
+  - Option: drop the invalid add and every message that causally follows it. Cost: an honest member's later messages are lost, and the member must send them again.
+- **A withdrawal concurrent with an add.** The add counts the earlier approval, and the withdrawal does not precede it.
+  - Option: every member removes the device as soon as it processes both. Cost: the device may have received keys from the add before the removal.
+  - Option: the device that withdrew does not acknowledge the add. Cost: a change to DCGKA's add-ack step, which needs analysis.
+- **Two repairs of the same device at the same time.** Two members may each remove and re-add the same device.
+  - Option: every member keeps the re-add whose message hash is lowest, and removes the device added by the other. Cost: one extra removal for each such conflict.
+  - Option: only the device's own user's other devices repair it, and other members only if that user has no other device in the group. Cost: a device whose user's other devices are rarely online waits longer.
+- **History in welcome messages.** DCGKA's welcome carries the group's history of control messages, so approvals and withdrawals accumulate in every later welcome, about 1.2 MB for each device added to a group of 128 devices.
+  - Option: a welcome carries only the approvals and withdrawals still in force. Cost: a new member cannot check the earlier history, and the rule changes DCGKA's welcome, which needs analysis.
+  - Option: accept the growth. Cost: welcome messages grow with every add, against decision 0017's storage limit.
