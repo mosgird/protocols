@@ -29,7 +29,7 @@ The team chose Tor onion services and I2P for the internet. It also chose local 
 - **Latency.** Both networks route through several relays, so delivery is slower than a direct connection. This is acceptable for messaging, and the protocol must not assume low latency.
 - **Neither network resists an observer who sees the whole network.** Timing correlation across the network remains possible. This limit is recorded in overview section 3.3 and [open question 10](../v0.1/open-questions.md#10-metadata-minimization).
 - **Local links reveal presence.** Nearby observers can see that a device is broadcasting or connecting. Discovery that hides stable identifiers limits what they learn, but does not hide the radio activity itself.
-- **Implementation.** The specification does not name a Tor or I2P implementation or library. That choice belongs to `mosgird/client` and `mosgird/android`, which must follow this record.
+- **Implementation.** The specification does not name a Tor or I2P implementation or library. That choice belongs to the implementation, now the shared library `mosgird/core` ([decision 0010](0010-shared-core-library.md)), which must follow this record.
 
 ## Alternatives considered
 

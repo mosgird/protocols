@@ -25,7 +25,7 @@ This document describes goals, non-goals, architecture, terminology and the mess
 
 ### 3.1 Components
 
-- **Client.** Software running on a user's device. It generates and stores key material, encrypts outgoing messages, decrypts incoming messages, delivers ciphertext to other devices, keeps undelivered ciphertext until it is delivered, and manages local state. Implemented in `mosgird/client` and `mosgird/android`.
+- **Client.** Software running on a user's device. It generates and stores key material, encrypts outgoing messages, decrypts incoming messages, delivers ciphertext to other devices, keeps undelivered ciphertext until it is delivered, and manages local state. The protocol, cryptography, storage, and transports are implemented once in the shared library `mosgird/core`. The applications `mosgird/client` and `mosgird/android` add the user interface ([decision 0010](../decisions/0010-shared-core-library.md)).
 - **Transport.** The means by which one device finds and reaches another, using an address derived from key material. It carries ciphertext and is not trusted with content. Over the internet, the transports are Tor onion services and I2P. Local links (Bluetooth, Wi-Fi Direct, the local network) are a fallback for when the internet is unavailable. Every link is encrypted and authenticated, and no client connects directly over the internet ([decision 0009](../decisions/0009-tor-and-i2p-with-local-links.md)).
 
 The protocol has no server component. Implementations are not part of this specification. Their repositories name the version of the specification they follow (see [VERSIONING.md](../VERSIONING.md)).
