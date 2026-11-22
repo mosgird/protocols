@@ -25,6 +25,8 @@ Options that needed a server no longer apply after [decision 0005](../decisions/
 
 ## 2. Identity format
 
+**Status:** closed by [decision 0016](../decisions/0016-user-identity-and-linked-devices.md) with option A, applied to a user key: a user is identified by a fingerprint of a user key that lives on the primary device and signs the user's device list. The open detail below is partly resolved there; what remains is listed at its end.
+
 **Question:** How is a user identified, and how is the link between a user and their key material established?
 
 **Options:**
@@ -36,11 +38,18 @@ Options that needed a server no longer apply after [decision 0005](../decisions/
 - **C. Human-readable username, with a self-signed binding to the identity key.** The binding is signed by the user's key and shown to contacts. Clients check it.
   - Cost: more complex to specify. Without a server or registry, names are not unique: two users can choose the same name, so a name alone never identifies a user. Clients must store and check history to detect silent changes.
 
-**Open detail:** whether the identifier is stable across devices, how a user's identity is recovered after losing all devices, and how the identifier relates to the transport address (see question 12).
+**Open detail:**
+
+- Whether the identifier is stable across devices. Resolved by decision 0016: it is, because it comes from the user key, not from a device.
+- How a user's identity is recovered after losing all devices. Resolved by decision 0016: it is not. Losing the primary device loses the identity.
+- How the identifier relates to the transport address (see question 12). Resolved by decision 0016: it does not. Addresses belong to devices and are listed in the signed device list.
+- Whether a user's remaining devices can warn contacts that the primary device was lost or stolen. Such a warning cannot be signed by the user key, which the thief may hold.
 
 ---
 
 ## 3. Multi-device key handling
+
+**Status:** closed by [decision 0016](../decisions/0016-user-identity-and-linked-devices.md) with options A and C: each device keeps its own keys, messages are encrypted once per device, and a new device is linked through the primary device, which signs the device list. Contacts hold every new device until their user approves it. The open detail below is partly resolved there; what remains is listed at its end.
 
 **Question:** How does a user with several devices hold keys, and how do messages reach all of them?
 
@@ -53,7 +62,13 @@ Options that needed a server no longer apply after [decision 0005](../decisions/
 - **C. Device linking through an existing device.** A new device is added by an approval from an already-trusted device. Each device still has its own keys; the link creates a signed statement that the device belongs to the user.
   - Cost: needs a linking flow (for example, a QR code or a short code) and clear rules for revocation. Adds to the verification surface.
 
-**Open detail:** how device lists are signed, distributed and checked without a server, and whether one device can hide another device of the same user from a contact. Under online-only delivery, each recipient device must be reachable separately, so a message can reach one of a user's devices and not another.
+**Open detail:**
+
+- How device lists are signed, distributed and checked without a server. Resolved by decision 0016: the user key signs them, any of the user's devices passes them on, and a list is accepted only with valid signatures and a higher version.
+- Whether one device can hide another device of the same user from a contact. Resolved by decision 0016: a device cannot change a signed list, and only the primary device can leave a device out of a new one. A device can pass on an older list, which is replaced as soon as any device passes on a newer one.
+- Under online-only delivery, each recipient device must be reachable separately, so a message can reach one of a user's devices and not another. Whether a user's devices pass messages to each other is [question 14](#14-retry-expiry-and-relaying-under-online-only-delivery), option B.
+- The highest number of devices per user, and the exact format of the device list and the link request.
+- How a client shows a held device to its user, so that approving it is an informed choice ([question 4](#4-key-verification-method)).
 
 ---
 
@@ -72,7 +87,7 @@ Options that needed a server no longer apply after [decision 0005](../decisions/
 - **D. Key transparency log.** A server publishes an append-only log of key changes, and clients check inclusion and consistency. Not applicable after decision 0005: there is no server to run the log.
   - Cost: significant design and operations work. Requires an auditor or gossip mechanism to be meaningful. Does not replace user-level verification by itself.
 
-**Open detail:** what the client shows after a key change, and whether a change in a contact's key blocks sending until the user acknowledges it. Without a directory, first contact often happens through a key the contact hands over directly (question 13), so verification at first contact matters more.
+**Open detail:** what the client shows after a key change, and whether a change in a contact's key blocks sending until the user acknowledges it. For a new device of a contact, [decision 0016](../decisions/0016-user-identity-and-linked-devices.md) answers the second part: nothing is sent to it until the user approves it. Whether a safety code covers the user key alone or the whole device list, as WhatsApp's does, is open. Without a directory, first contact often happens through a key the contact hands over directly (question 13), so verification at first contact matters more.
 
 ---
 
