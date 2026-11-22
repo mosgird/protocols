@@ -1,5 +1,8 @@
 (* Mosgird group relaying: authenticity of relayed group messages
-   (decision 0017, points 5 and 7; decision 0006).
+   (decision 0017, points 5 and 7; decision 0006), and of application
+   messages signed under short-lived keys (decision 0018). For those,
+   the term m stands for the identifier, the key fingerprint and the
+   ciphertext.
    DRAFT drafted by an AI tool. Not a proof until a human with
    ProVerif experience has reviewed every line (decision 0013).
 
@@ -50,6 +53,43 @@ query g: bitstring, p: bitstring, m: bitstring;
 query g: bitstring, p: bitstring, m: bitstring;
   event(Accepted(spk(skA), g, p, m)).
 
+(* Application messages (decision 0018): each member device signs
+   under a short-lived key that it makes for each epoch and hands to
+   every other member device inside a decision 0012 session. That
+   session is abstracted as a private channel per sender (chA, chB):
+   authenticated and confidential between two honest devices. mpOTR's
+   proof of possession and attestation steps are not modelled. *)
+free idA, idB: bitstring.
+free chA, chB: channel [private].
+
+event AppSent(bitstring, bitstring, bitstring, bitstring).
+event AppAccepted(bitstring, bitstring, bitstring, bitstring).
+
+query g: bitstring, p: bitstring, m: bitstring;
+  event(AppAccepted(idA, g, p, m)) ==> event(AppSent(idA, g, p, m)).
+query g: bitstring, p: bitstring, m: bitstring;
+  event(AppAccepted(idB, g, p, m)) ==> event(AppSent(idB, g, p, m)).
+query g: bitstring, p: bitstring, m: bitstring;
+  event(AppAccepted(idA, g, p, m)).
+
+(* One epoch of an honest member: a fresh short-lived key, handed out
+   over the deniable session, then any number of signed messages. *)
+let AppSender(id: bitstring, ch: channel) =
+  new ek: sskey;
+  ( (!out(ch, spk(ek))) |
+    (!in(c, (g: bitstring, p: bitstring, m: bitstring));
+      event AppSent(id, g, p, m);
+      out(c, (g, p, m, sign(ek, (g, p, m))))) ).
+
+(* A receiving device accepts a short-lived key for a member only from
+   that member's session, then accepts messages that verify under it. *)
+let AppReceiver(id: bitstring, ch: channel) =
+  in(ch, pk: spkey);   (* taking it from c instead lets ProVerif find
+                          forgeries (negative control, see README.md) *)
+  !in(c, (g: bitstring, p: bitstring, m: bitstring, s: bitstring));
+  let (=g, =p, =m) = verify(pk, (g, p, m), s) in
+  event AppAccepted(id, g, p, m).
+
 (* An honest member sends: the attacker picks the group, the
    predecessor hashes and the content. *)
 let Sender(sk: sskey) =
@@ -69,4 +109,6 @@ let Receiver =
 
 process
   out(c, (spk(skA), spk(skB)));
-  ( (!Sender(skA)) | (!Sender(skB)) | (!Receiver) )
+  ( (!Sender(skA)) | (!Sender(skB)) | (!Receiver)
+  | (!AppSender(idA, chA)) | (!AppSender(idB, chB))
+  | (!AppReceiver(idA, chA)) | (!AppReceiver(idB, chB)) )

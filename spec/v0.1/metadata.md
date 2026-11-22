@@ -32,6 +32,7 @@ Which devices a user approves, holds, or distrusts is stored only on that user's
 - The membership of the group, which member sent each message, who added or removed whom, and when each member updates their keys. DCGKA does not hide this from members ([decision 0006](../decisions/0006-dcgka-for-groups.md)).
 - The size and timing of each message, and the onion addresses and I2P destinations of the members they talk to directly.
 - When other members were online, and which group control messages each member was missing, because members pass missing messages on to each other ([decision 0017](../decisions/0017-retry-expiry-and-relaying.md)). Each member stores the group's control messages until every member has acknowledged them or they expire.
+- Which short-lived signing key each member device uses in each epoch, and so when two member devices last held a session with each other ([decision 0018](../decisions/0018-deniable-signatures-for-group-messages.md)). A member can show other members who wrote an application message, but not an outsider.
 - Community and channel structure: names, roles, membership, and moderation actions. Whether non-members can learn any of this is **[open]** ([open question 7](open-questions.md#7-community-and-channel-structure-visibility)).
 
 **Network observers and transport relays can observe:**

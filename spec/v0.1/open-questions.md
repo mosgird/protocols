@@ -322,9 +322,9 @@ Still open:
   - remove the member and add it again, which costs a membership change and a key update for the whole group, loses the messages in between for that member, and needs a member with permission to do it ([question 16](#16-community-moderation-without-an-operator));
   - a longer expiry for control messages, which costs storage on every member device;
   - both.
-- Whether group application messages are signed, so that members can check and relay them. Options:
-  - sign them, which lets members relay them but removes their deniability within the group;
-  - do not sign them, which keeps deniability, but only their sender can re-send them.
+- Whether group application messages are signed, so that members can check and relay them. Proposed by [decision 0018](../decisions/0018-deniable-signatures-for-group-messages.md): signed with short-lived keys handed over in deniable sessions, as in multi-party OTR. Still open from it:
+  - whether short-lived private keys are published once every member has finished with them, which makes old transcripts editable by anyone but allows impersonation if a key is published too early;
+  - whether DCGKA's message keys let one member compute another member's keys, which decides how much an unsigned message would show about its writer. This needs checking against the DCGKA paper.
 - How far one member can use other members' storage by sending many large control messages. Decision 0017 evicts the largest sender's messages first. Whether a per-sender limit is needed, and which, is open.
 - Option B for direct messages: a recipient's device passing a direct message to the recipient's other devices. Decision 0016 holds a contact's new device until the user approves it, and the recipient's devices do not know which devices the sender approved. Options: keep sender-only delivery, which costs slower delivery to rarely-online devices; let the sender name the approved devices in each message, which costs telling the recipient the sender's trust states, which decision 0016 keeps local; or encrypt to each approved device's identity key for later delivery, which costs forward secrecy until that device's next handshake and needs a published design.
 - How a phone retries without push services ([question 17](#17-mobile-reachability-without-push-services)).
@@ -429,6 +429,7 @@ Delivery is online-only ([decision 0005](../decisions/0005-serverless-online-onl
 - How the chosen option interacts with first contact ([question 13](#13-first-contact-without-a-directory)) and with the group protocol's two-party component ([question 15](#15-two-party-component-for-dcgka)).
 - How deniability is shown for the patterns of decision 0012. The symbolic provers that [decision 0013](../decisions/0013-formal-verification.md) requires do not check deniability in their usual form, so it needs a separate argument.
 - Group control messages are signed, because DCGKA requires it. Group membership changes are therefore not deniable to other members, even if direct messages are.
+- Group application messages are signed under short-lived keys ([decision 0018](../decisions/0018-deniable-signatures-for-group-messages.md)). Their deniability rests on the argument of multi-party OTR (Goldberg et al., CCS 2009), which the paper does not formally prove, and on the deniability of decision 0012's sessions. Both need the separate argument above.
 
 ---
 
